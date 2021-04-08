@@ -20,10 +20,7 @@ public class CustomEncoder extends MessageToByteEncoder {
         b[3] = (byte) (dataLength >> 24 & 0xff);
         byte[] pattern;
         if(msg instanceof ClientRequestModel){
-            if(((ClientRequestModel) msg).getId() != null){
-                pattern = new byte[]{0};
-            }
-            else pattern = new byte[]{1};
+            pattern = new byte[]{0};
         }
         else throw new SocketException("发送类[ClientRequestModel]异常");
         byte[] future = new byte[27];
