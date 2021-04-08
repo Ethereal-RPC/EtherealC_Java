@@ -1,8 +1,14 @@
 package RPCNet;
 
+import Model.RPCException;
+import Model.ServerRequestModel;
 import RPCNet.Interface.IClientRequestSend;
 import RPCNet.Interface.IClientResponseReceive;
 import RPCNet.Interface.IServerRequestReceive;
+import RPCRequest.RequestCore;
+import RPCService.ServiceCore;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * @ProjectName: YiXian_Client
@@ -17,8 +23,8 @@ import RPCNet.Interface.IServerRequestReceive;
  * @Version: 1.0
  */
 public class NetConfig {
-    private IServerRequestReceive serverRequestReceive;
-    private IClientResponseReceive clientResponseReceive;
+    private IServerRequestReceive serverRequestReceive = ServiceCore::ServerRequestReceive;
+    private IClientResponseReceive clientResponseReceive = RequestCore::ClientResponseProcess;
     private IClientRequestSend clientRequestSend;
     private boolean Debug = false;
 
