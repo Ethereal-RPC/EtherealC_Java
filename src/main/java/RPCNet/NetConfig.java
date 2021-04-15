@@ -23,8 +23,8 @@ import java.lang.reflect.InvocationTargetException;
  * @Version: 1.0
  */
 public class NetConfig {
-    private IServerRequestReceive serverRequestReceive = ServiceCore::ServerRequestReceive;
-    private IClientResponseReceive clientResponseReceive = RequestCore::ClientResponseProcess;
+    private IServerRequestReceive serverRequestReceive;
+    private IClientResponseReceive clientResponseReceive;
     private IClientRequestSend clientRequestSend;
     private boolean Debug = false;
 

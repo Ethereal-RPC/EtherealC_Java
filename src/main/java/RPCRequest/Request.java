@@ -30,15 +30,16 @@ public  class Request implements InvocationHandler {
     }
 
 
-    public static <T> T register(Class<T> interface_class, String service, Pair<String,String> key, RequestConfig config){
+    public static <T> T register(Class<T> interface_class,  Pair<String,String> key, String service,RequestConfig config){
         Request proxy = new Request();
         proxy.service = service;
         proxy.clientKey = key;
         proxy.config = config;
         if (config.getTokenEnable()) proxy.paramStart = 1;
         else proxy.paramStart = 0;
-        return (T) Proxy.newProxyInstance(interface_class.getClassLoader(),new Class<?>[]{interface_class}, proxy);
+        return (T) Proxy.newProxyInstance(Request.class.getClassLoader(),new Class<?>[]{interface_class}, proxy);
     }
+
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws RPCException, InvocationTargetException, IllegalAccessException {
         Annotation.RPCRequest annotation = method.getAnnotation(Annotation.RPCRequest.class);
@@ -79,7 +80,7 @@ public  class Request implements InvocationHandler {
             ClientRequestModel request = new ClientRequestModel("2.0", service, methodId.toString(),array);
             NetConfig netConfig;
             netConfig = NetCore.Get(clientKey);
-            if(netConfig == null)throw new RPCException(RPCException.ErrorCode.NotFoundNetConfig,String.format("%s-%s-%s-%s方法未找到NetConfig",clientKey.getValue0(),clientKey.getValue1(),service,methodId));
+            if(netConfig == null)throw new RPCException(RPCException.ErrorCode.RuntimeError,String.format("%s-%s-%s-%s方法未找到NetConfig",clientKey.getValue0(),clientKey.getValue1(),service,methodId));
             Class<?> return_type = method.getReturnType();
             if(return_type.equals(Void.TYPE)){
                 netConfig.getClientRequestSend().ClientRequestSend(request);
@@ -99,13 +100,13 @@ public  class Request implements InvocationHandler {
                 if(respond != null && respond.getResult() != null){
                     if(respond.getError()!=null){
                         if(respond.getError().getCode() == 0){
-                            throw new RPCException(RPCException.ErrorCode.NoneAuthority,"用户权限不足");
+                            throw new RPCException(RPCException.ErrorCode.RuntimeError,"用户权限不足");
                         }
                     }
                     if(config.getType().getConvert().get(respond.getResultType())!=null){
                         return config.getType().getConvert().get(respond.getResultType()).convert(respond.getResult());
                     }
-                    else throw new RPCException(RPCException.ErrorCode.Main,respond.getResultType() + "抽象数据类型尚未注册");
+                    else throw new RPCException(RPCException.ErrorCode.RuntimeError,respond.getResultType() + "抽象数据类型尚未注册");
                 }
                 else return null;
             }

@@ -1,4 +1,5 @@
 package RPCRequest;
+import java.lang.reflect.Proxy;
 import java.util.HashMap;
 
 import Model.ClientRequestModel;
@@ -13,19 +14,19 @@ import org.javatuples.Triplet;
 public class RequestCore {
     static HashMap<Triplet<String,String,String>,Object> requests = new HashMap<>();
 
-    public static <T> T register(Class<T> interface_class, String serviceName, String hostname, String port, RPCType type) throws RPCException{
-        return register(interface_class,serviceName,hostname,port,new RequestConfig(type));
+    public static <T> T register(Class<T> interface_class, String hostname, String port, String serviceName, RPCType type) throws RPCException{
+        return register(interface_class,hostname,port,serviceName,new RequestConfig(type));
     }
 
-    public static <T> T register(Class<T> interface_class, String serviceName, String ip, String port, RequestConfig config) throws RPCException {
+    public static <T> T register(Class<T> interface_class,  String ip, String port,String serviceName, RequestConfig config) throws RPCException {
         T service = null;
-        Triplet<String,String,String> key = new Triplet<String,String,String>(serviceName, ip,port);
+        Triplet<String,String,String> key = new Triplet<String,String,String>(ip,port,serviceName);
         service = (T) requests.get(key);
         if(service == null){
             try{
                 SocketClient socketClient = null;
                 Pair<String,String> clientKey = new Pair<String,String>(ip,port);
-                service = Request.register(interface_class,serviceName,clientKey,config);
+                service = Request.register(interface_class,clientKey,serviceName,config);
                 requests.put(key,service);
             }
             catch (Exception err){
@@ -36,23 +37,14 @@ public class RequestCore {
         return service;
     }
 
-    public static void unregister(String serviceName, String hostname, String port){
-        Triplet<String,String,String> key = new Triplet<>(serviceName,hostname,port);
-        if(requests.containsKey(key)){
-            requests.remove(key);
-        }
+    public static void unregister( String hostname, String port,String serviceName){
+        Triplet<String,String,String> key = new Triplet<>(hostname,port,serviceName);
+        requests.remove(key);
     }
     public static Request get(Triplet<String,String,String> key){
-        return (Request) requests.get(key);
+        Object request = requests.get(key);
+        return (Request) Proxy.getInvocationHandler(request);
     }
 
-    public static void ClientResponseProcess(String ip, String port, NetConfig netConfig, ClientResponseModel response) throws RPCException {
-        int id = Integer.parseInt(response.getId());
-        Request request = RequestCore.get(new Triplet<>(ip,port,response.getService()));
-        if(request != null){
-            ClientRequestModel requestModel = request.getTasks().get(Integer.parseInt((response.getId())));
-            requestModel.setResult(response);
-        }
-        else if(netConfig.isDebug())throw new RPCException(RPCException.ErrorCode.NotFoundRequest,String.format("%s-%s-%s Request未找到",ip,port,response.getService()));
-    }
+
 }

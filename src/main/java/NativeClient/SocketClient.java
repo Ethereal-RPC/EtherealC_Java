@@ -6,12 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import NativeClient.Interface.IConnectSuccess;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.FixedRecvByteBufAllocator;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -58,18 +53,20 @@ public class SocketClient {
         try {
             bootstrap = new Bootstrap();               //1
             bootstrap.group(group)                                //2
-                    .option(ChannelOption.RCVBUF_ALLOCATOR,new FixedRecvByteBufAllocator(config.getBufferSize()))
                     .channel(NioSocketChannel.class)            //3
                     .handler(new ChannelInitializer<SocketChannel>() {    //5
                         @Override
-                        public void initChannel(SocketChannel ch)
-                                throws Exception {
-                            ch.pipeline().addLast(new CustomDecoder());
+                        public void initChannel(SocketChannel ch) {
+                            ch.pipeline().addLast(new CustomDecoder(clientKey,config));
                             ch.pipeline().addLast(new IdleStateHandler(0,0,5));
                             ch.pipeline().addLast(new CustomHeartbeatHandler(SocketClient.this));
                             ch.pipeline().addLast(new CustomEncoder());
                         }
                     });
+            if(config.isNettyAdaptBuffer()){
+                bootstrap.option(ChannelOption.RCVBUF_ALLOCATOR,new AdaptiveRecvByteBufAllocator());
+            }
+            else bootstrap.option(ChannelOption.RCVBUF_ALLOCATOR,new FixedRecvByteBufAllocator(config.getBufferSize()));
             doConnect();
         }
         catch (Exception e){

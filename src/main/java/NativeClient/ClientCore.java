@@ -1,7 +1,6 @@
 package NativeClient;
 
 import Model.ClientRequestModel;
-import NativeClient.Interface.IConnectSuccess;
 import RPCNet.Interface.IClientRequestSend;
 import RPCNet.NetConfig;
 import RPCNet.NetCore;
@@ -12,11 +11,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ClientCore {
     private static ConcurrentHashMap<Pair<String,String>, SocketClient> clients = new ConcurrentHashMap<>();
 
-    public static SocketClient startClient(String host, String port){
-        return startClient(host,port,new ClientConfig());
+    public static SocketClient register(String host, String port){
+        return register(host,port,new ClientConfig());
     }
 
-    public static SocketClient startClient(String host, String port, ClientConfig config){
+    public static SocketClient register(String host, String port, ClientConfig config){
         Pair<String,String> key = new Pair<>(host,port);
         SocketClient socketClient = null;
         socketClient = clients.get(key);
@@ -26,12 +25,7 @@ public class ClientCore {
                 socketClient = new SocketClient(key,config);
                 clients.put(key, socketClient);
                 SocketClient finalSocketClient = socketClient;
-                netConfig.setClientRequestSend(new IClientRequestSend() {
-                    @Override
-                    public void ClientRequestSend(ClientRequestModel request) {
-                        finalSocketClient.send(request);
-                    }
-                });
+                netConfig.setClientRequestSend(finalSocketClient::send);
             }
         }
         return socketClient;

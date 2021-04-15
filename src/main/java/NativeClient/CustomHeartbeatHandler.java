@@ -4,10 +4,15 @@ import Model.ClientRequestModel;
 import Model.ClientResponseModel;
 import java.lang.reflect.Method;
 
+import Model.ServerRequestModel;
 import RPCNet.NetConfig;
 import RPCNet.NetCore;
-import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandler;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleStateEvent;
 
 /**
@@ -16,19 +21,11 @@ import io.netty.handler.timeout.IdleStateEvent;
  * @email yongshun1228@gmail.com
  * @created 16/9/18 13:02
  */
-public class CustomHeartbeatHandler extends ChannelHandlerAdapter {
+public class CustomHeartbeatHandler extends ChannelInboundHandlerAdapter {
     private int heartbeatCount = 0;
     private SocketClient socketClient;
     public CustomHeartbeatHandler(SocketClient socketClient){
         this.socketClient = socketClient;
-    }
-
-    @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        NetConfig netConfig = NetCore.Get(socketClient.getClientKey());
-        if(msg instanceof ClientResponseModel){
-            netConfig.getClientResponseReceive().ClientResponseReceive(socketClient.getClientKey().getValue0(),socketClient.getClientKey().getValue1(),netConfig,(ClientResponseModel)msg);
-        }
     }
 
     @Override

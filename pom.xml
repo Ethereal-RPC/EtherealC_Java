@@ -6,7 +6,11 @@
 
     <groupId>groupId</groupId>
     <artifactId>EtherealC</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>EtherealC_Test</module>
+    </modules>
 
     <properties>
         <maven.compiler.source>15</maven.compiler.source>
@@ -17,7 +21,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>5.0.0.Alpha2</version>
+            <version>4.1.63.Final</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.javatuples/javatuples -->
         <dependency>
@@ -31,6 +35,5 @@
             <artifactId>gson</artifactId>
             <version>2.8.6</version>
         </dependency>
-
     </dependencies>
 </project>

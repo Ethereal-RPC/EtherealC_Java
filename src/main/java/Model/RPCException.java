@@ -1,7 +1,7 @@
 package Model;
 
 public class RPCException extends Exception{
-    public enum ErrorCode { Main, Intercepted,NotFoundService, RegisterError, NotFoundNetConfig,NoneAuthority,NotFoundRequest }
+    public enum ErrorCode { RegisterError,RuntimeError }
     private ErrorCode errorCode;
     public RPCException(String message)
     {
