@@ -3,7 +3,6 @@ package RPCRequest;
 import Model.ClientRequestModel;
 import Model.ClientResponseModel;
 import Model.RPCException;
-import NativeClient.SocketClient;
 import RPCNet.NetConfig;
 import RPCNet.NetCore;
 import org.javatuples.Pair;
@@ -18,9 +17,9 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 public  class Request implements InvocationHandler {
-    private ConcurrentHashMap<Integer,ClientRequestModel> tasks = new ConcurrentHashMap<>();
-    private Random random = new Random();
-    private String service;
+    private final ConcurrentHashMap<Integer,ClientRequestModel> tasks = new ConcurrentHashMap<>();
+    private final Random random = new Random();
+    private String serviceName;
     private Pair<String,String> clientKey;
     private RequestConfig config;
     private int paramStart;
@@ -30,9 +29,9 @@ public  class Request implements InvocationHandler {
     }
 
 
-    public static <T> T register(Class<T> interface_class,  Pair<String,String> key, String service,RequestConfig config){
+    public static <T> T register(Class<T> interface_class, Pair<String,String> key, String serviceName, RequestConfig config){
         Request proxy = new Request();
-        proxy.service = service;
+        proxy.serviceName = serviceName;
         proxy.clientKey = key;
         proxy.config = config;
         if (config.getTokenEnable()) proxy.paramStart = 1;
@@ -77,10 +76,10 @@ public  class Request implements InvocationHandler {
                 }
                 else throw new RPCException(String.format("方法体%s中RPCMethod注解与实际参数数量不符,@RPCRequest:%d个,Method:%d个",method.getName(),types_name.length,args.length));
             }
-            ClientRequestModel request = new ClientRequestModel("2.0", service, methodId.toString(),array);
+            ClientRequestModel request = new ClientRequestModel("2.0", serviceName, methodId.toString(),array);
             NetConfig netConfig;
             netConfig = NetCore.Get(clientKey);
-            if(netConfig == null)throw new RPCException(RPCException.ErrorCode.RuntimeError,String.format("%s-%s-%s-%s方法未找到NetConfig",clientKey.getValue0(),clientKey.getValue1(),service,methodId));
+            if(netConfig == null)throw new RPCException(RPCException.ErrorCode.RuntimeError,String.format("%s-%s-%s-%s方法未找到NetConfig",clientKey.getValue0(),clientKey.getValue1(), serviceName,methodId));
             Class<?> return_type = method.getReturnType();
             if(return_type.equals(Void.TYPE)){
                 netConfig.getClientRequestSend().ClientRequestSend(request);
