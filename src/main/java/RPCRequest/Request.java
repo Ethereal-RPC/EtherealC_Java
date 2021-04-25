@@ -22,7 +22,6 @@ public  class Request implements InvocationHandler {
     private String serviceName;
     private Pair<String,String> clientKey;
     private RequestConfig config;
-    private int paramStart;
 
     public ConcurrentHashMap<Integer, ClientRequestModel> getTasks() {
         return tasks;
@@ -34,8 +33,6 @@ public  class Request implements InvocationHandler {
         proxy.serviceName = serviceName;
         proxy.clientKey = key;
         proxy.config = config;
-        if (config.getTokenEnable()) proxy.paramStart = 1;
-        else proxy.paramStart = 0;
         return (T) Proxy.newProxyInstance(Request.class.getClassLoader(),new Class<?>[]{interface_class}, proxy);
     }
 
@@ -49,11 +46,11 @@ public  class Request implements InvocationHandler {
             int param_count;
             if(args!=null)param_count = args.length;
             else param_count = 0;
-            String[] array = new String[param_count + paramStart];
+            String[] array = new String[param_count + 1];
             if(annotation.parameters().length == 0){
                 Class<?>[] parameters = method.getParameterTypes();
                 String type_name;
-                for(int i=0,j=paramStart;i<param_count;i++,j++){
+                for(int i=0,j=1;i<param_count;i++,j++){
                     type_name = config.getType().getAbstractName().get(parameters[i]);
                     if(type_name != null) {
                         methodId.append("-").append(type_name);
@@ -65,7 +62,7 @@ public  class Request implements InvocationHandler {
             else {
                 String[] types_name = annotation.parameters();
                 if(param_count == types_name.length){
-                    for(int i=0,j=paramStart;i<args.length;i++,j++){
+                    for(int i=0,j=1;i<args.length;i++,j++){
                         factType = config.getType().getAbstractType().get(types_name[i]);
                         if(factType!=null){
                             methodId.append("-").append(types_name[i]);

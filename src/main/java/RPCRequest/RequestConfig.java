@@ -15,20 +15,11 @@ import Model.RPCType;
  * @Version: 1.0
  */
 public class RequestConfig {
-    private Boolean tokenEnable = true;
     private RPCType type;
     private int timeout = -1;
 
     public RequestConfig(RPCType type){
         this.type = type;
-    }
-
-    public Boolean getTokenEnable() {
-        return tokenEnable;
-    }
-
-    public void setTokenEnable(Boolean tokenEnable) {
-        this.tokenEnable = tokenEnable;
     }
 
     public RPCType getType() {
