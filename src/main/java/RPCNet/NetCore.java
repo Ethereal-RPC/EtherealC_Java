@@ -1,18 +1,12 @@
 package RPCNet;
 
-import Model.ClientRequestModel;
-import Model.ClientResponseModel;
-import Model.RPCException;
-import Model.ServerRequestModel;
-import RPCNet.Interface.IClientResponseReceive;
-import RPCNet.Interface.IServerRequestReceive;
+import Model.*;
 import RPCRequest.Request;
 import RPCRequest.RequestCore;
 import RPCService.Service;
 import RPCService.ServiceCore;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
-import org.javatuples.Tuple;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -49,7 +43,14 @@ public class NetCore {
         if(service != null){
             method = service.getMethods().get(request.getMethodId());
             if(method!= null){
-                service.ConvertParams(request.getMethodId(),request.getParams());
+                //开始序列化参数
+                String[] param_id = request.getMethodId().split("-");
+                for (int i = 1,j=0; i < param_id.length; i++,j++)
+                {
+                    RPCType rpcType = service.getTypes().getTypesByName().get(param_id[i]);
+                    if(rpcType == null)throw new RPCException(String.format("RPC中的%s类型参数尚未被注册！",param_id[i]));
+                    else request.getParams()[j] = rpcType.getDeserialize().Deserialize((String)request.getParams()[j]);
+                }
                 method.invoke(service.getInstance(),request.getParams());
             }
             else {

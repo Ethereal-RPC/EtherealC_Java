@@ -3,21 +3,18 @@ package RPCService;
 import Model.RPCException;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 
-import Model.RPCType;
-import Model.ServerRequestModel;
-import RPCNet.NetConfig;
+import Model.RPCTypeConfig;
 import org.javatuples.Triplet;
 
 public class ServiceCore {
     //Java没有自带三元组，这里就引用Kotlin了.
     public static HashMap<Triplet<String,String,String>, Service> services = new HashMap<>();
-    public static void register(Object instance, String ip, String port,  String serviceName,RPCType type) throws RPCException {
+    public static void register(Object instance, String ip, String port, String serviceName, RPCTypeConfig type) throws RPCException {
         register(instance, ip,port,serviceName,new ServiceConfig(type));
     }
-    public static void register(Class instanceClass,  String ip, String port,String serviceName, RPCType type) throws RPCException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public static void register(Class instanceClass,  String ip, String port,String serviceName, RPCTypeConfig type) throws RPCException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         register(instanceClass.getDeclaredConstructor().newInstance(), ip,port,serviceName,new ServiceConfig(type));
     }
     public static void register(Class instanceClass,  String ip, String port,String serviceName, ServiceConfig config) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, RPCException {
@@ -29,7 +26,7 @@ public class ServiceCore {
         if(service == null){
             try{
                 service = new Service();
-                service.register(instance,config.getType());
+                service.register(instance,config.getTypes());
                 services.put(key,service);
             }
             catch (Exception err){

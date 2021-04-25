@@ -1,6 +1,6 @@
 package RPCRequest;
 
-import Model.RPCType;
+import Model.RPCTypeConfig;
 
 /**
  * @ProjectName: YiXian_Client
@@ -15,18 +15,18 @@ import Model.RPCType;
  * @Version: 1.0
  */
 public class RequestConfig {
-    private RPCType type;
+    private RPCTypeConfig type;
     private int timeout = -1;
 
-    public RequestConfig(RPCType type){
+    public RequestConfig(RPCTypeConfig type){
         this.type = type;
     }
 
-    public RPCType getType() {
+    public RPCTypeConfig getType() {
         return type;
     }
 
-    public void setType(RPCType type) {
+    public void setType(RPCTypeConfig type) {
         this.type = type;
     }
 

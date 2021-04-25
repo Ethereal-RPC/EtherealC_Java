@@ -3,6 +3,7 @@ package RPCRequest;
 import Model.ClientRequestModel;
 import Model.ClientResponseModel;
 import Model.RPCException;
+import Model.RPCType;
 import RPCNet.NetConfig;
 import RPCNet.NetCore;
 import org.javatuples.Pair;
@@ -49,12 +50,11 @@ public  class Request implements InvocationHandler {
             String[] array = new String[param_count + 1];
             if(annotation.parameters().length == 0){
                 Class<?>[] parameters = method.getParameterTypes();
-                String type_name;
                 for(int i=0,j=1;i<param_count;i++,j++){
-                    type_name = config.getType().getAbstractName().get(parameters[i]);
-                    if(type_name != null) {
-                        methodId.append("-").append(type_name);
-                        array[j] = Utils.gson.toJson(args[i],parameters[i]);
+                    RPCType rpcType = config.getType().getTypesByType().get(parameters[i]);
+                    if(rpcType != null) {
+                        methodId.append("-").append(rpcType.getName());
+                        array[j] = rpcType.getSerialize().Serialize(args[i]);
                     }
                     else throw new RPCException(String.format("Java中的%s类型参数尚未注册！",parameters[i].getName()));
                 }
@@ -63,10 +63,10 @@ public  class Request implements InvocationHandler {
                 String[] types_name = annotation.parameters();
                 if(param_count == types_name.length){
                     for(int i=0,j=1;i<args.length;i++,j++){
-                        factType = config.getType().getAbstractType().get(types_name[i]);
-                        if(factType!=null){
-                            methodId.append("-").append(types_name[i]);
-                            array[j] = Utils.gson.toJson(args[i],factType);
+                        RPCType rpcType = config.getType().getTypesByName().get(types_name[i]);
+                        if(rpcType!=null){
+                            methodId.append("-").append(rpcType.getName());
+                            array[j] = rpcType.getSerialize().Serialize(args[i]);
                         }
                         else throw new RPCException(String.format("方法体%s中的抽象类型为%s的类型尚未注册！",method.getName(),types_name[i]));
                     }
@@ -99,8 +99,9 @@ public  class Request implements InvocationHandler {
                             throw new RPCException(RPCException.ErrorCode.RuntimeError,"用户权限不足");
                         }
                     }
-                    if(config.getType().getConvert().get(respond.getResultType())!=null){
-                        return config.getType().getConvert().get(respond.getResultType()).convert(respond.getResult());
+                    RPCType rpcType = config.getType().getTypesByName().get(respond.getResultType());
+                    if(rpcType!=null){
+                        return rpcType.getDeserialize().Deserialize(respond.getResult());
                     }
                     else throw new RPCException(RPCException.ErrorCode.RuntimeError,respond.getResultType() + "抽象数据类型尚未注册");
                 }

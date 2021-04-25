@@ -1,6 +1,6 @@
 package RPCService;
 
-import Model.RPCType;
+import Model.RPCTypeConfig;
 /**
  * @ProjectName: YiXian_Client
  * @Package: com.yixian.material.RPC
@@ -14,26 +14,17 @@ import Model.RPCType;
  * @Version: 1.0
  */
 public class ServiceConfig {
-    private Boolean tokenEnable;
-    private RPCType type;
+    private RPCTypeConfig types;
 
-    public Boolean getTokenEnable() {
-        return tokenEnable;
+    public RPCTypeConfig getTypes() {
+        return types;
     }
 
-    public void setTokenEnable(Boolean tokenEnable) {
-        this.tokenEnable = tokenEnable;
+    public void setTypes(RPCTypeConfig types) {
+        this.types = types;
     }
 
-    public RPCType getType() {
-        return type;
-    }
-
-    public void setType(RPCType type) {
-        this.type = type;
-    }
-
-    public ServiceConfig(RPCType type) {
-        this.type = type;
+    public ServiceConfig(RPCTypeConfig type) {
+        this.types = type;
     }
 }

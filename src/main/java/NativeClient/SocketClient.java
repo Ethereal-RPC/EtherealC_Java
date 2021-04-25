@@ -1,11 +1,17 @@
     package NativeClient;
 
 import Model.ClientRequestModel;
+
+import java.net.SocketException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import NativeClient.Interface.IConnectSuccess;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledDirectByteBuf;
+import io.netty.buffer.UnpooledHeapByteBuf;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -60,7 +66,6 @@ public class SocketClient {
                             ch.pipeline().addLast(new CustomDecoder(clientKey,config));
                             ch.pipeline().addLast(new IdleStateHandler(0,0,5));
                             ch.pipeline().addLast(new CustomHeartbeatHandler(SocketClient.this));
-                            ch.pipeline().addLast(new CustomEncoder());
                         }
                     });
             if(config.isNettyAdaptBuffer()){
@@ -102,7 +107,22 @@ public class SocketClient {
     }
     public void send(ClientRequestModel request) {
         if(channel!=null && channel.isActive()){
-            channel.writeAndFlush(request);
+            byte[] body =  config.getClientRequestModelSerialize().Serialize(request).getBytes(config.getCharset());
+            int dataLength = body.length;  //读取消息的长度
+            byte[] b = new byte[4];
+            b[0] = (byte) (dataLength & 0xff);
+            b[1] = (byte) (dataLength >> 8 & 0xff);
+            b[2] = (byte) (dataLength >> 16 & 0xff);
+            b[3] = (byte) (dataLength >> 24 & 0xff);
+            byte[] pattern;
+            pattern = new byte[]{0};
+            byte[] future = new byte[27];
+            ByteBuf out = new UnpooledHeapByteBuf(ByteBufAllocator.DEFAULT,32 + body.length,32 + body.length);
+            out.writeBytes(b);
+            out.writeBytes(pattern);
+            out.writeBytes(future);
+            out.writeBytes(body);  //消息体中包含我们要发送的数据
+            channel.writeAndFlush(out);
         }
     }
 }

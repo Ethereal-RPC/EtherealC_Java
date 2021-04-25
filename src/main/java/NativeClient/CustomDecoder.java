@@ -52,13 +52,13 @@ public class CustomDecoder extends ByteToMessageDecoder {
                         String data = in.toString(in.readerIndex() + headSize,body_length,config.getCharset());
                         if(pattern == 0){
                             //Log.d(Tag.RemoteRepository,"[服-请求]:" + data);
-                            ServerRequestModel serverRequestModel = Utils.Utils.gson.fromJson(data, ServerRequestModel.class);
+                            ServerRequestModel serverRequestModel = config.getServerRequestModelDeserialize().Deserialize(data);
                             netConfig.getServerRequestReceive().ServerRequestReceive(clientKey.getValue0(),clientKey.getValue1(),netConfig,serverRequestModel);
 
                         }
                         else {
                             //Log.d(Tag.RemoteRepository,"[客-返回]:" + data);
-                            ClientResponseModel clientResponseModel = Utils.Utils.gson.fromJson(data, ClientResponseModel.class);
+                            ClientResponseModel clientResponseModel = config.getClientResponseModelDeserialize().Deserialize(data);
                             netConfig.getClientResponseReceive().ClientResponseReceive(clientKey.getValue0(),clientKey.getValue1(),netConfig,clientResponseModel);
                         }
                         in.readerIndex(in.readerIndex() + length);

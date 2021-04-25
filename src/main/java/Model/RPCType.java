@@ -1,59 +1,48 @@
 package Model;
-import Utils.Utils;
 
 import java.lang.reflect.Type;
-import java.util.HashMap;
 
 public class RPCType {
-    public interface IConvert {
-        Object convert(Object obj);
+    public interface IDeserialize {
+        Object Deserialize(String obj);
     }
-    private HashMap<Type, String> abstractName = new HashMap<>();
-    private HashMap<String, Type> abstractType = new HashMap<>();
-    private HashMap<String, IConvert> convert = new HashMap<>();
-
-    public HashMap<Type, String> getAbstractName() {
-        return abstractName;
+    public interface ISerialize {
+        String  Serialize(Object obj);
     }
+    private IDeserialize deserialize;
+    private ISerialize serialize;
+    private Type type;
+    private String name;
 
-    public HashMap<String, Type> getAbstractType() {
-        return abstractType;
-    }
-
-    public RPCType(){
-
+    public IDeserialize getDeserialize() {
+        return deserialize;
     }
 
-    public void setAbstractType(HashMap<String, Type> abstractType) {
-        this.abstractType = abstractType;
+    public void setDeserialize(IDeserialize deserialize) {
+        this.deserialize = deserialize;
     }
 
-    public void setAbstractName(HashMap<Type, String> abstractName) {
-        this.abstractName = abstractName;
+    public ISerialize getSerialize() {
+        return serialize;
     }
 
-    public HashMap<String, IConvert> getConvert() {
-        return convert;
+    public void setSerialize(ISerialize serialize) {
+        this.serialize = serialize;
     }
 
-    public void setConvert(HashMap<String, IConvert> convert) {
-        this.convert = convert;
+    public Type getType() {
+        return type;
     }
 
-    public void add(Type type, String abstractName) throws RPCException {
-        if (convert.containsKey(abstractName) || this.abstractName.containsKey(type)) throw new RPCException(String.format("类型:{%s}转{%s}发生异常,存在重复键",type, abstractName));
-        else{
-            this.abstractName.put(type, abstractName);
-            this.abstractType.put(abstractName,type);
-            convert.put(abstractName, obj -> obj = Utils.gson.fromJson((String)obj,type));
-        }
+    public void setType(Type type) {
+        this.type = type;
     }
-    public void add(Type type, String abstractName, IConvert convert) throws RPCException {
-        if (this.convert.containsKey(abstractName) || this.abstractName.containsKey(type)) throw new RPCException(String.format("类型:{%s}转{%s+}发生异常,存在重复键",type, abstractName));
-        else{
-            this.abstractName.put(type, abstractName);
-            this.abstractType.put(abstractName,type);
-            this.convert.put(abstractName,convert);
-        }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

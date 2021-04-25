@@ -6,13 +6,13 @@ import java.util.Arrays;
 
 public class ServerRequestModel {
     @Expose
-    public String jsonRpc;
+    private String jsonRpc;
     @Expose
-    public String methodId;
+    private String methodId;
     @Expose
-    public Object[] params;
+    private Object[] params;
     @Expose
-    public String service;
+    private String service;
 
 
     public ServerRequestModel(String jsonRpc, String methodId, Object[] params, String service) {

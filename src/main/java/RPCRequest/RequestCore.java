@@ -2,19 +2,16 @@ package RPCRequest;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 
-import Model.ClientRequestModel;
-import Model.ClientResponseModel;
 import Model.RPCException;
-import Model.RPCType;
+import Model.RPCTypeConfig;
 import NativeClient.SocketClient;
-import RPCNet.NetConfig;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
 public class RequestCore {
     static HashMap<Triplet<String,String,String>,Object> requests = new HashMap<>();
 
-    public static <T> T register(Class<T> interface_class, String hostname, String port, String serviceName, RPCType type) throws RPCException{
+    public static <T> T register(Class<T> interface_class, String hostname, String port, String serviceName, RPCTypeConfig type) throws RPCException{
         return register(interface_class,hostname,port,serviceName,new RequestConfig(type));
     }
 
