@@ -46,7 +46,7 @@ public class CustomDecoder extends ByteToMessageDecoder {
                     NetConfig netConfig = NetCore.Get(clientKey);
                     if(netConfig == null){
                         throw new RPCException(RPCException.ErrorCode.RuntimeError,
-                                "未找到%s-%s-NetConfig".formatted(clientKey.getValue0(),clientKey.getValue1()));
+                                String.format("未找到%s-%s-NetConfig", clientKey.getValue0(),clientKey.getValue1()));
                     }
                     try{
                         String data = in.toString(in.readerIndex() + headSize,body_length,config.getCharset());
@@ -64,8 +64,8 @@ public class CustomDecoder extends ByteToMessageDecoder {
                         in.readerIndex(in.readerIndex() + length);
                     }
                     catch(Exception e){
-                        throw new RPCException(RPCException.ErrorCode.RuntimeError,"%s-%s:用户数据错误，已自动断开连接！"
-                                .formatted(clientKey.getValue0() + ":" + clientKey.getValue1(),ctx.channel().remoteAddress()));
+                        throw new RPCException(RPCException.ErrorCode.RuntimeError, String.format("%s-%s:用户数据错误，已自动断开连接！",
+                                clientKey.getValue0() + ":" + clientKey.getValue1(),ctx.channel().remoteAddress()));
                     }
                 }
                 else {
@@ -81,8 +81,8 @@ public class CustomDecoder extends ByteToMessageDecoder {
                             return;
                         }
                         else {
-                            throw new RPCException(RPCException.ErrorCode.RuntimeError,"%s-%s:用户请求数据量太大，中止接收！"
-                                    .formatted(clientKey.getValue0() + ":" + clientKey.getValue1(),ctx.channel().remoteAddress()));
+                            throw new RPCException(RPCException.ErrorCode.RuntimeError, String.format("%s-%s:用户请求数据量太大，中止接收！",
+                                    clientKey.getValue0() + ":" + clientKey.getValue1(),ctx.channel().remoteAddress()));
                         }
                     }
                     return;

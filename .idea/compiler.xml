@@ -10,8 +10,8 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="EtherealC" target="15" />
-      <module name="EtherealC_Test" target="15" />
+      <module name="EtherealC" target="8" />
+      <module name="EtherealC_Test" target="8" />
     </bytecodeTargetLevel>
   </component>
 </project>

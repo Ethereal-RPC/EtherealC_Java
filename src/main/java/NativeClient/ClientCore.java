@@ -34,7 +34,7 @@ public class ClientCore {
         Pair<String,String> key = new Pair<>(ip,port);
         return clients.get(key);
     }
-    public static void destory(String ip,String port){
+    public static void unregister(String ip,String port){
         Pair<String,String> key = new Pair<>(ip,port);
         SocketClient echoClient;
         echoClient = clients.get(key);

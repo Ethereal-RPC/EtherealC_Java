@@ -19,10 +19,10 @@ public class NetCore {
     {
         return configs.get(key);
     }
-    public static void Register(String ip, String port) throws RPCException {
-        Register(ip, port, new NetConfig());
+    public static void register(String ip, String port) throws RPCException {
+        register(ip, port, new NetConfig());
     }
-    public static void Register(String ip, String port, NetConfig config) throws RPCException {
+    public static void register(String ip, String port, NetConfig config) throws RPCException {
         NetConfig value = configs.get(new Pair<>(ip, port));
         if (value == null)
         {
@@ -32,7 +32,7 @@ public class NetCore {
         }
         else throw new RPCException(RPCException.ErrorCode.RegisterError,String.format("%s-%s的NetConfig已经注册",ip,port));
     }
-    public static Boolean UnRegister(String ip, String port)
+    public static Boolean unregister(String ip, String port)
     {
         NetConfig config = null;
         return configs.remove(new Pair<String, String>(ip, port),config);

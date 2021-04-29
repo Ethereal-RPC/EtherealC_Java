@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="EtherealC:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/EtherealC_jar</output-path>
+    <root id="archive" name="EtherealC.jar">
+      <element id="module-output" name="EtherealC" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/google/code/gson/gson/2.8.6/gson-2.8.6.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/javatuples/javatuples/1.2/javatuples-1.2.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/io/netty/netty-all/4.1.63.Final/netty-all-4.1.63.Final.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

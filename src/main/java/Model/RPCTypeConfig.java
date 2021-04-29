@@ -38,7 +38,7 @@ public class RPCTypeConfig {
             RPCType rpcType = new RPCType();
             rpcType.setName(abstractName);
             rpcType.setType(type);
-            rpcType.setDeserialize(obj -> Utils.gson.fromJson((String)obj,type));
+            rpcType.setDeserialize(obj -> Utils.gson.fromJson(obj,type));
             rpcType.setSerialize(obj -> Utils.gson.toJson(rpcType,type));
             this.typesByType.put(type, rpcType);
             this.typesByName.put(abstractName,rpcType);
@@ -50,8 +50,8 @@ public class RPCTypeConfig {
             RPCType rpcType = new RPCType();
             rpcType.setName(abstractName);
             rpcType.setType(type);
-            rpcType.setSerialize(Objects.requireNonNullElseGet(serialize,() -> obj -> Utils.gson.toJson(rpcType,type)));
-            rpcType.setDeserialize(Objects.requireNonNullElseGet(deserialize, () -> obj -> Utils.gson.fromJson((String) obj, type)));
+            rpcType.setSerialize(serialize);
+            rpcType.setDeserialize(deserialize);
             this.typesByType.put(type, rpcType);
             this.typesByName.put(abstractName,rpcType);
         }
