@@ -1,5 +1,6 @@
 package NativeClient;
 
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -48,13 +49,22 @@ public class CustomDecoder extends ByteToMessageDecoder {
                         throw new RPCException(RPCException.ErrorCode.RuntimeError,
                                 String.format("未找到%s-%s-NetConfig", clientKey.getValue0(),clientKey.getValue1()));
                     }
+                    String data = null;
                     try{
-                        String data = in.toString(in.readerIndex() + headSize,body_length,config.getCharset());
+                        data = in.toString(in.readerIndex() + headSize,body_length,config.getCharset());
+                    }
+                    catch(Exception e){
+
+                        System.out.println(in.readerIndex() + "||" + in.writerIndex());
+                        throw new RPCException(RPCException.ErrorCode.RuntimeError, String.format("%s-%s:用户数据错误，已自动断开连接!",
+                                clientKey.getValue0() + ":" + clientKey.getValue1(),ctx.channel().remoteAddress()));
+                    }
+
+                    try{
                         if(pattern == 0){
                             //Log.d(Tag.RemoteRepository,"[服-请求]:" + data);
                             ServerRequestModel serverRequestModel = config.getServerRequestModelDeserialize().Deserialize(data);
                             netConfig.getServerRequestReceive().ServerRequestReceive(clientKey.getValue0(),clientKey.getValue1(),netConfig,serverRequestModel);
-
                         }
                         else {
                             //Log.d(Tag.RemoteRepository,"[客-返回]:" + data);
@@ -63,9 +73,8 @@ public class CustomDecoder extends ByteToMessageDecoder {
                         }
                         in.readerIndex(in.readerIndex() + length);
                     }
-                    catch(Exception e){
-                        throw new RPCException(RPCException.ErrorCode.RuntimeError, String.format("%s-%s:用户数据错误，已自动断开连接！",
-                                clientKey.getValue0() + ":" + clientKey.getValue1(),ctx.channel().remoteAddress()));
+                    catch (Exception e){
+                        e.printStackTrace();
                     }
                 }
                 else {

@@ -22,8 +22,8 @@ public class ClientConfig {
     private int bufferSize = 1024;
     private int maxBufferSize = 10240;
     private Charset charset = StandardCharsets.UTF_8;
-    private int dynamicAdjustBufferCount = -1;
-    private boolean nettyAdaptBuffer = true;
+    private int dynamicAdjustBufferCount = 1;
+    private boolean nettyAdaptBuffer = false;
     private IClientRequestModelSerialize clientRequestModelSerialize;
     private IServerRequestModelDeserialize serverRequestModelDeserialize;
     private IClientResponseModelDeserialize clientResponseModelDeserialize;
