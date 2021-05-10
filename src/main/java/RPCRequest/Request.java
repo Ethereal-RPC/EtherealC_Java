@@ -4,10 +4,9 @@ import Model.ClientRequestModel;
 import Model.ClientResponseModel;
 import Model.RPCException;
 import Model.RPCType;
-import RPCNet.NetConfig;
+import RPCNet.Net;
 import RPCNet.NetCore;
 import org.javatuples.Pair;
-import Utils.Utils;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -74,12 +73,11 @@ public  class Request implements InvocationHandler {
                 else throw new RPCException(String.format("方法体%s中RPCMethod注解与实际参数数量不符,@RPCRequest:%d个,Method:%d个",method.getName(),types_name.length,args.length));
             }
             ClientRequestModel request = new ClientRequestModel("2.0", serviceName, methodId.toString(),array);
-            NetConfig netConfig;
-            netConfig = NetCore.Get(clientKey);
-            if(netConfig == null)throw new RPCException(RPCException.ErrorCode.RuntimeError,String.format("%s-%s-%s-%s方法未找到NetConfig",clientKey.getValue0(),clientKey.getValue1(), serviceName,methodId));
+            Net net = NetCore.Get(clientKey);
+            if(net == null)throw new RPCException(RPCException.ErrorCode.RuntimeError,String.format("%s-%s-%s-%s方法未找到NetConfig",clientKey.getValue0(),clientKey.getValue1(), serviceName,methodId));
             Class<?> return_type = method.getReturnType();
             if(return_type.equals(Void.TYPE)){
-                netConfig.getClientRequestSend().ClientRequestSend(request);
+                net.getClientRequestSend().ClientRequestSend(request);
                 return null;
             }
             else{
@@ -91,7 +89,7 @@ public  class Request implements InvocationHandler {
                 tasks.put(id,request);
                 int timeout = config.getTimeout();
                 if(annotation.timeout() != -1)timeout = annotation.timeout();
-                netConfig.getClientRequestSend().ClientRequestSend(request);
+                net.getClientRequestSend().ClientRequestSend(request);
                 ClientResponseModel respond = request.getResult(timeout);
                 if(respond != null && respond.getResult() != null){
                     if(respond.getError()!=null){

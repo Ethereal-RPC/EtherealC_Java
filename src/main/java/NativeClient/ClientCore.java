@@ -1,8 +1,6 @@
 package NativeClient;
 
-import Model.ClientRequestModel;
-import RPCNet.Interface.IClientRequestSend;
-import RPCNet.NetConfig;
+import RPCNet.Net;
 import RPCNet.NetCore;
 import org.javatuples.Pair;
 
@@ -20,12 +18,12 @@ public class ClientCore {
         SocketClient socketClient = null;
         socketClient = clients.get(key);
         if(socketClient == null){
-            NetConfig netConfig = NetCore.Get(key);
-            if(netConfig != null){
+            Net net = NetCore.Get(key);
+            if(net != null){
                 socketClient = new SocketClient(key,config);
                 clients.put(key, socketClient);
                 SocketClient finalSocketClient = socketClient;
-                netConfig.setClientRequestSend(finalSocketClient::send);
+                net.setClientRequestSend(finalSocketClient::send);
             }
         }
         return socketClient;

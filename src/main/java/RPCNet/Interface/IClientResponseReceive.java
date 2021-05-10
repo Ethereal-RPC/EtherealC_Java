@@ -5,5 +5,5 @@ import Model.RPCException;
 import RPCNet.NetConfig;
 
 public interface IClientResponseReceive {
-    public void ClientResponseReceive(String ip, String port, NetConfig config, ClientResponseModel request) throws RPCException;
+    public void ClientResponseReceive(ClientResponseModel request) throws RPCException;
 }

@@ -8,6 +8,7 @@ import Model.ClientRequestModel;
 import Model.ClientResponseModel;
 import Model.RPCException;
 import Model.ServerRequestModel;
+import RPCNet.Net;
 import RPCNet.NetConfig;
 import RPCNet.NetCore;
 import io.netty.buffer.ByteBuf;
@@ -44,38 +45,38 @@ public class CustomDecoder extends ByteToMessageDecoder {
                 in.getBytes(in.readerIndex()+ bodySize + patternSize,future,0, futureSize);
                 int length = body_length + headSize;
                 if(length <= count){
-                    NetConfig netConfig = NetCore.Get(clientKey);
-                    if(netConfig == null){
+                    Net net = NetCore.Get(clientKey);
+                    if(net == null){
                         throw new RPCException(RPCException.ErrorCode.RuntimeError,
-                                String.format("未找到%s-%s-NetConfig", clientKey.getValue0(),clientKey.getValue1()));
+                                String.format("未找到%s-%s-net", clientKey.getValue0(),clientKey.getValue1()));
                     }
                     String data = null;
                     try{
                         data = in.toString(in.readerIndex() + headSize,body_length,config.getCharset());
                     }
                     catch(Exception e){
-
                         System.out.println(in.readerIndex() + "||" + in.writerIndex());
                         throw new RPCException(RPCException.ErrorCode.RuntimeError, String.format("%s-%s:用户数据错误，已自动断开连接!",
                                 clientKey.getValue0() + ":" + clientKey.getValue1(),ctx.channel().remoteAddress()));
                     }
 
                     try{
+
                         if(pattern == 0){
                             //Log.d(Tag.RemoteRepository,"[服-请求]:" + data);
                             ServerRequestModel serverRequestModel = config.getServerRequestModelDeserialize().Deserialize(data);
-                            netConfig.getServerRequestReceive().ServerRequestReceive(clientKey.getValue0(),clientKey.getValue1(),netConfig,serverRequestModel);
+                            net.getServerRequestReceive().ServerRequestReceive(serverRequestModel);
                         }
                         else {
                             //Log.d(Tag.RemoteRepository,"[客-返回]:" + data);
                             ClientResponseModel clientResponseModel = config.getClientResponseModelDeserialize().Deserialize(data);
-                            netConfig.getClientResponseReceive().ClientResponseReceive(clientKey.getValue0(),clientKey.getValue1(),netConfig,clientResponseModel);
+                            net.getClientResponseReceive().ClientResponseReceive(clientResponseModel);
                         }
-                        in.readerIndex(in.readerIndex() + length);
                     }
                     catch (Exception e){
                         e.printStackTrace();
                     }
+                    in.readerIndex(in.readerIndex() + length);
                 }
                 else {
                     if(in.readerIndex() != 0){
