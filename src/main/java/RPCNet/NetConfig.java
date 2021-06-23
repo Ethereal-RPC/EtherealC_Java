@@ -1,12 +1,10 @@
 package RPCNet;
 
 import Model.RPCException;
-import Model.ServerRequestModel;
-import RPCNet.Interface.IClientRequestSend;
-import RPCNet.Interface.IClientResponseReceive;
-import RPCNet.Interface.IServerRequestReceive;
-import RPCRequest.RequestCore;
-import RPCService.ServiceCore;
+import Model.RPCLog;
+import NativeClient.SocketClient;
+import RPCNet.Event.ExceptionEvent;
+import RPCNet.Event.LogEvent;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -23,5 +21,28 @@ import java.lang.reflect.InvocationTargetException;
  * @Version: 1.0
  */
 public class NetConfig {
+    private ExceptionEvent exceptionEvent = new ExceptionEvent();
+    private LogEvent logEvent = new LogEvent();
 
+    public ExceptionEvent getExceptionEvent() {
+        return exceptionEvent;
+    }
+
+    public LogEvent getLogEvent() {
+        return logEvent;
+    }
+    public void onException(RPCException.ErrorCode code, String message, Net net) throws RPCException {
+        onException(new RPCException(code,message),net);
+    }
+    public void onException(RPCException exception, Net net) throws RPCException {
+        exceptionEvent.OnEvent(exception,net);
+        throw exception;
+    }
+
+    public void onLog(RPCLog.LogCode code, String message, Net net){
+        onLog(new RPCLog(code,message),net);
+    }
+    public void onLog(RPCLog log, Net net){
+        logEvent.OnEvent(log,net);
+    }
 }

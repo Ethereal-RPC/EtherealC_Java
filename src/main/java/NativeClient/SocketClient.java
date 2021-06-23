@@ -2,15 +2,14 @@
 
 import Model.ClientRequestModel;
 
-import java.net.SocketException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import NativeClient.Interface.IConnectSuccess;
+import Model.RPCException;
+import Model.RPCLog;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.UnpooledDirectByteBuf;
 import io.netty.buffer.UnpooledHeapByteBuf;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -36,10 +35,12 @@ public class SocketClient {
     private Bootstrap bootstrap;
     private Random random = new Random();
     private ClientConfig config;
+    private String netName;
     private Pair<String,String> clientKey;
 
-    public SocketClient(Pair<String,String> clientKey, ClientConfig config) {
+    public SocketClient(String netName,Pair<String,String> clientKey, ClientConfig config) {
         this.config = config;
+        this.netName = netName;
         this.clientKey = clientKey;
     }
     public Pair<String, String> getClientKey() {
@@ -63,7 +64,7 @@ public class SocketClient {
                     .handler(new ChannelInitializer<SocketChannel>() {    //5
                         @Override
                         public void initChannel(SocketChannel ch) {
-                            ch.pipeline().addLast(new CustomDecoder(clientKey,config));
+                            ch.pipeline().addLast(new CustomDecoder(netName,clientKey,config));
                             ch.pipeline().addLast(new IdleStateHandler(0,0,5));
                             ch.pipeline().addLast(new CustomHeartbeatHandler(SocketClient.this));
                         }
@@ -88,10 +89,10 @@ public class SocketClient {
             if (futureListener.isSuccess()) {
                 channel = futureListener.channel();
                 if(config.getConnectSuccess()!=null)config.getConnectSuccess().OnConnectSuccess();
-                System.out.println("Connect to server successfully!");
+                config.onLog(RPCLog.LogCode.Runtime,"Connect to server successfully!",this);
             }
             else {
-                System.out.println("Failed to connect to server, try connect after 10s");
+                config.onException(RPCException.ErrorCode.Runtime,"Failed to connect to server, try connect after 10s",this);
                 futureListener.channel().eventLoop().schedule(new Runnable() {
                     @Override
                     public void run() {

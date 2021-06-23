@@ -6,7 +6,6 @@ import Model.RPCException;
 import Model.RPCType;
 import RPCNet.Net;
 import RPCNet.NetCore;
-import org.javatuples.Pair;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -20,7 +19,7 @@ public  class Request implements InvocationHandler {
     private final ConcurrentHashMap<Integer,ClientRequestModel> tasks = new ConcurrentHashMap<>();
     private final Random random = new Random();
     private String serviceName;
-    private Pair<String,String> clientKey;
+    private String netName;
     private RequestConfig config;
 
     public ConcurrentHashMap<Integer, ClientRequestModel> getTasks() {
@@ -28,10 +27,10 @@ public  class Request implements InvocationHandler {
     }
 
 
-    public static <T> T register(Class<T> interface_class, Pair<String,String> key, String serviceName, RequestConfig config){
+    public static <T> T register(Class<T> interface_class,String netName, String serviceName, RequestConfig config){
         Request proxy = new Request();
         proxy.serviceName = serviceName;
-        proxy.clientKey = key;
+        proxy.netName = netName;
         proxy.config = config;
         return (T) Proxy.newProxyInstance(Request.class.getClassLoader(),new Class<?>[]{interface_class}, proxy);
     }
@@ -55,7 +54,7 @@ public  class Request implements InvocationHandler {
                         methodId.append("-").append(rpcType.getName());
                         array[j] = rpcType.getSerialize().Serialize(args[i]);
                     }
-                    else throw new RPCException(String.format("Java中的%s类型参数尚未注册！",parameters[i].getName()));
+                    else config.onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("Java中的%s类型参数尚未注册！",parameters[i].getName())),this);
                 }
             }
             else {
@@ -67,14 +66,16 @@ public  class Request implements InvocationHandler {
                             methodId.append("-").append(rpcType.getName());
                             array[j] = rpcType.getSerialize().Serialize(args[i]);
                         }
-                        else throw new RPCException(String.format("方法体%s中的抽象类型为%s的类型尚未注册！",method.getName(),types_name[i]));
+                        else config.onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("方法体%s中的抽象类型为%s的类型尚未注册！",method.getName(),types_name[i])),this);
                     }
                 }
-                else throw new RPCException(String.format("方法体%s中RPCMethod注解与实际参数数量不符,@RPCRequest:%d个,Method:%d个",method.getName(),types_name.length,args.length));
+                else config.onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("方法体%s中RPCMethod注解与实际参数数量不符,@RPCRequest:%d个,Method:%d个",method.getName(),types_name.length,args.length)),this);
             }
             ClientRequestModel request = new ClientRequestModel("2.0", serviceName, methodId.toString(),array);
-            Net net = NetCore.Get(clientKey);
-            if(net == null)throw new RPCException(RPCException.ErrorCode.RuntimeError,String.format("%s-%s-%s-%s方法未找到NetConfig",clientKey.getValue0(),clientKey.getValue1(), serviceName,methodId));
+            Net net = NetCore.get(netName);
+            if(net == null){
+                config.onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("%s-%s-%s方法未找到NetConfig",netName, serviceName,methodId)),this);
+            }
             Class<?> return_type = method.getReturnType();
             if(return_type.equals(Void.TYPE)){
                 net.getClientRequestSend().ClientRequestSend(request);
@@ -94,18 +95,27 @@ public  class Request implements InvocationHandler {
                 if(respond != null && respond.getResult() != null){
                     if(respond.getError()!=null){
                         if(respond.getError().getCode() == 0){
-                            throw new RPCException(RPCException.ErrorCode.RuntimeError,"用户权限不足");
+                            config.onException(new RPCException(RPCException.ErrorCode.Runtime,"用户权限不足"),this);
                         }
                     }
                     RPCType rpcType = config.getType().getTypesByName().get(respond.getResultType());
                     if(rpcType!=null){
                         return rpcType.getDeserialize().Deserialize(respond.getResult());
                     }
-                    else throw new RPCException(RPCException.ErrorCode.RuntimeError,respond.getResultType() + "抽象数据类型尚未注册");
+                    else config.onException(new RPCException(RPCException.ErrorCode.Runtime,respond.getResultType() + "抽象数据类型尚未注册"),this);
+                    return null;
                 }
                 else return null;
             }
         }
         else return method.invoke(this,args);
+    }
+
+    public RequestConfig getConfig() {
+        return config;
+    }
+
+    public void setConfig(RequestConfig config) {
+        this.config = config;
     }
 }

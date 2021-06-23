@@ -2,7 +2,7 @@ package NativeClient.Interface;
 
 /**
  * @ProjectName: YiXian_Client
- * @Package: com.yixian.material.EtherealC.Net.Interface
+ * @Package: com.yixian.material.EtherealC.Net.IClientRequestModelSerialize
  * @ClassName: IConnectSuccess
  * @Description: java类作用描述
  * @Author: Jianxian
@@ -12,6 +12,6 @@ package NativeClient.Interface;
  * @UpdateRemark: 更新说明
  * @Version: 1.0
  */
-public interface IConnectSuccess {
-    public void OnConnectSuccess();
+public interface ConnectSuccessDelegate {
+    void OnConnectSuccess();
 }

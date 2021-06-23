@@ -1,15 +1,12 @@
 package RPCNet;
 
 import Model.*;
+import NativeClient.SocketClient;
 import RPCNet.Interface.IClientRequestSend;
 import RPCNet.Interface.IClientResponseReceive;
 import RPCNet.Interface.IServerRequestReceive;
 import RPCRequest.Request;
-import RPCRequest.RequestCore;
 import RPCService.Service;
-import RPCService.ServiceCore;
-import org.javatuples.Pair;
-import org.javatuples.Triplet;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -17,14 +14,27 @@ import java.lang.reflect.Proxy;
 import java.util.HashMap;
 
 public class Net {
-    private Pair<String, String> clientKey;
     private NetConfig config;
     private IServerRequestReceive serverRequestReceive;
     private IClientResponseReceive clientResponseReceive;
     private IClientRequestSend clientRequestSend;
+    private String name;
+    private SocketClient client;
+
+    public String getName() {
+        return name;
+    }
+
+    public SocketClient getClient() {
+        return client;
+    }
+
+    public void setClient(SocketClient client) {
+        this.client = client;
+    }
+
     //Java没有自带三元组，这里就引用Kotlin了.
     private HashMap<String, Service> services = new HashMap<>();
-
     private HashMap<String, Object> requests = new HashMap<>();
 
     public IServerRequestReceive getServerRequestReceive() {
@@ -49,14 +59,6 @@ public class Net {
 
     public void setClientRequestSend(IClientRequestSend clientRequestSend) {
         this.clientRequestSend = clientRequestSend;
-    }
-
-    public Pair<String, String> getClientKey() {
-        return clientKey;
-    }
-
-    public void setClientKey(Pair<String, String> clientKey) {
-        this.clientKey = clientKey;
     }
 
     public NetConfig getConfig() {
@@ -98,17 +100,20 @@ public class Net {
                 for (int i = 1,j=0; i < param_id.length; i++,j++)
                 {
                     RPCType rpcType = service.getTypes().getTypesByName().get(param_id[i]);
-                    if(rpcType == null)throw new RPCException(String.format("RPC中的%s类型参数尚未被注册！",param_id[i]));
+                    if(rpcType == null){
+                        //**待会改，需要Service的日志输出
+                        service.getConfig().onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("RPC中的%s类型参数尚未被注册！",param_id[i])),service);
+                    }
                     else request.getParams()[j] = rpcType.getDeserialize().Deserialize((String)request.getParams()[j]);
                 }
                 method.invoke(service.getInstance(),request.getParams());
             }
             else {
-                throw new RPCException(RPCException.ErrorCode.RuntimeError,String.format("%s-%s-%s-%s Not Found",clientKey.getValue0(),clientKey.getValue1(),request.getService(),request.getMethodId()));
+                service.getConfig().onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("%s-%s-%s Not Found",name,request.getService(),request.getMethodId())),service);
             }
         }
         else {
-            throw new RPCException(RPCException.ErrorCode.RuntimeError,String.format("%s-%s-%s Not Found",clientKey.getValue0(),clientKey.getValue1(),request.getService()));
+            config.getExceptionEvent().OnEvent(new RPCException(RPCException.ErrorCode.Runtime,String.format("%s-%s Not Found",name,request.getService())),this);
         }
     }
     private void ClientResponseProcess(ClientResponseModel response) throws RPCException {
@@ -119,9 +124,8 @@ public class Net {
             if(requestModel != null){
                 requestModel.setResult(response);
             }
-            else throw new RPCException(RPCException.ErrorCode.RuntimeError,String.format("%s-%s-%s-%s RequestId未找到",clientKey.getValue0(),clientKey.getValue1(),response.getService(),id));
+            else throw new RPCException(RPCException.ErrorCode.Runtime,String.format("%s-%s-%s-%s RequestId未找到",name,response.getService(),id));
         }
-        else throw new RPCException(RPCException.ErrorCode.RuntimeError,String.format("%s-%s-%s Request未找到",clientKey.getValue0(),clientKey.getValue1(),response.getService()));
+        config.onLog(RPCLog.LogCode.Runtime,String.format("%s-%s-%s Request未找到",name,response.getService()),this);
     }
-
 }

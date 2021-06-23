@@ -1,6 +1,10 @@
 package RPCRequest;
 
+import Model.RPCException;
+import Model.RPCLog;
 import Model.RPCTypeConfig;
+import RPCRequest.Event.ExceptionEvent;
+import RPCRequest.Event.LogEvent;
 
 /**
  * @ProjectName: YiXian_Client
@@ -17,7 +21,30 @@ import Model.RPCTypeConfig;
 public class RequestConfig {
     private RPCTypeConfig type;
     private int timeout = -1;
+    private ExceptionEvent exceptionEvent = new ExceptionEvent();
+    private LogEvent logEvent = new LogEvent();
 
+    public ExceptionEvent getExceptionEvent() {
+        return exceptionEvent;
+    }
+
+    public LogEvent getLogEvent() {
+        return logEvent;
+    }
+    public void onException(RPCException.ErrorCode code, String message, Request request) throws RPCException {
+        onException(new RPCException(code,message),request);
+    }
+    public void onException(RPCException exception, Request request) throws RPCException {
+        exceptionEvent.OnEvent(exception,request);
+        throw exception;
+    }
+
+    public void onLog(RPCLog.LogCode code, String message, Request request){
+        onLog(new RPCLog(code,message),request);
+    }
+    public void onLog(RPCLog log, Request request){
+        logEvent.OnEvent(log,request);
+    }
     public RequestConfig(RPCTypeConfig type){
         this.type = type;
     }

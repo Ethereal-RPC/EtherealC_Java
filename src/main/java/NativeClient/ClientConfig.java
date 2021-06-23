@@ -1,32 +1,35 @@
 package NativeClient;
 
-import Model.ClientRequestModel;
-import Model.ClientResponseModel;
-import Model.ServerRequestModel;
-import NativeClient.Interface.IConnectSuccess;
+import Model.*;
+import NativeClient.Event.ExceptionEvent;
+import NativeClient.Event.LogEvent;
+import NativeClient.Interface.*;
 import Utils.Utils;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 public class ClientConfig {
-    public interface IClientRequestModelSerialize {
-        String Serialize(ClientRequestModel obj);
-    }
-    public interface IServerRequestModelDeserialize {
-        ServerRequestModel Deserialize(String obj);
-    }
-    public interface IClientResponseModelDeserialize {
-        ClientResponseModel Deserialize(String obj);
-    }
+
     private int bufferSize = 1024;
     private int maxBufferSize = 10240;
     private Charset charset = StandardCharsets.UTF_8;
     private int dynamicAdjustBufferCount = 1;
     private boolean nettyAdaptBuffer = false;
-    private IClientRequestModelSerialize clientRequestModelSerialize;
-    private IServerRequestModelDeserialize serverRequestModelDeserialize;
-    private IClientResponseModelDeserialize clientResponseModelDeserialize;
+    private ClientRequestModelSerializeDelegate clientRequestModelSerialize;
+    private ServerRequestModelDeserializeDelegate serverRequestModelDeserialize;
+    private ClientResponseModelDeserializeDelegate clientResponseModelDeserialize;
+    private ExceptionEvent exceptionEvent = new ExceptionEvent();
+    private LogEvent logEvent = new LogEvent();
+
+    public ExceptionEvent getExceptionEvent() {
+        return exceptionEvent;
+    }
+
+    public LogEvent getLogEvent() {
+        return logEvent;
+    }
+
 
     public ClientConfig(){
         clientRequestModelSerialize = obj -> Utils.gson.toJson(obj,ClientRequestModel.class);
@@ -34,27 +37,27 @@ public class ClientConfig {
         clientResponseModelDeserialize = obj -> Utils.gson.fromJson(obj,ClientResponseModel.class);
     }
 
-    public IClientRequestModelSerialize getClientRequestModelSerialize() {
+    public ClientRequestModelSerializeDelegate getClientRequestModelSerialize() {
         return clientRequestModelSerialize;
     }
 
-    public void setClientRequestModelSerialize(IClientRequestModelSerialize clientRequestModelSerialize) {
+    public void setClientRequestModelSerialize(ClientRequestModelSerializeDelegate clientRequestModelSerialize) {
         this.clientRequestModelSerialize = clientRequestModelSerialize;
     }
 
-    public IServerRequestModelDeserialize getServerRequestModelDeserialize() {
+    public ServerRequestModelDeserializeDelegate getServerRequestModelDeserialize() {
         return serverRequestModelDeserialize;
     }
 
-    public void setServerRequestModelDeserialize(IServerRequestModelDeserialize serverRequestModelDeserialize) {
+    public void setServerRequestModelDeserialize(ServerRequestModelDeserializeDelegate serverRequestModelDeserialize) {
         this.serverRequestModelDeserialize = serverRequestModelDeserialize;
     }
 
-    public IClientResponseModelDeserialize getClientResponseModelDeserialize() {
+    public ClientResponseModelDeserializeDelegate getClientResponseModelDeserialize() {
         return clientResponseModelDeserialize;
     }
 
-    public void setClientResponseModelDeserialize(IClientResponseModelDeserialize clientResponseModelDeserialize) {
+    public void setClientResponseModelDeserialize(ClientResponseModelDeserializeDelegate clientResponseModelDeserialize) {
         this.clientResponseModelDeserialize = clientResponseModelDeserialize;
     }
 
@@ -82,7 +85,7 @@ public class ClientConfig {
         this.charset = charset;
     }
 
-    private IConnectSuccess connectSuccess;
+    private ConnectSuccessDelegate connectSuccess;
 
     public int getBufferSize() {
         return bufferSize;
@@ -92,11 +95,11 @@ public class ClientConfig {
         this.bufferSize = bufferSize;
     }
 
-    public IConnectSuccess getConnectSuccess() {
+    public ConnectSuccessDelegate getConnectSuccess() {
         return connectSuccess;
     }
 
-    public void setConnectSuccess(IConnectSuccess connectSuccess) {
+    public void setConnectSuccess(ConnectSuccessDelegate connectSuccess) {
         this.connectSuccess = connectSuccess;
     }
 
@@ -106,5 +109,20 @@ public class ClientConfig {
 
     public void setMaxBufferSize(int maxBufferSize) {
         this.maxBufferSize = maxBufferSize;
+    }
+
+    public void onException(RPCException.ErrorCode code, String message, SocketClient client) throws RPCException {
+        onException(new RPCException(code,message),client);
+    }
+    public void onException(RPCException exception, SocketClient client) throws RPCException {
+        exceptionEvent.OnEvent(exception,client);
+        throw exception;
+    }
+
+    public void onLog(RPCLog.LogCode code, String message, SocketClient client){
+        onLog(new RPCLog(code,message),client);
+    }
+    public void onLog(RPCLog log, SocketClient client){
+        logEvent.OnEvent(log,client);
     }
 }

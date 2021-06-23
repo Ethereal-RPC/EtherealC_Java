@@ -33,7 +33,7 @@ public class RPCTypeConfig {
 
     }
     public void add(Type type, String abstractName) throws RPCException {
-        if (typesByName.containsKey(abstractName) || typesByType.containsKey(type)) throw new RPCException(String.format("类型:{%s}转{%s}发生异常,存在重复键",type, abstractName));
+        if (typesByName.containsKey(abstractName) || typesByType.containsKey(type)) throw new RPCException(RPCException.ErrorCode.Core,String.format("类型:{%s}转{%s}发生异常,存在重复键",type, abstractName));
         else{
             RPCType rpcType = new RPCType();
             rpcType.setName(abstractName);
@@ -45,7 +45,7 @@ public class RPCTypeConfig {
         }
     }
     public void add(Type type, String abstractName, RPCType.ISerialize serialize, RPCType.IDeserialize deserialize) throws RPCException {
-        if (typesByName.containsKey(abstractName) || typesByType.containsKey(type)) throw new RPCException(String.format("类型:{%s}转{%s}发生异常,存在重复键",type, abstractName));
+        if (typesByName.containsKey(abstractName) || typesByType.containsKey(type)) throw new RPCException(RPCException.ErrorCode.Core,String.format("类型:{%s}转{%s}发生异常,存在重复键",type, abstractName));
         else{
             RPCType rpcType = new RPCType();
             rpcType.setName(abstractName);

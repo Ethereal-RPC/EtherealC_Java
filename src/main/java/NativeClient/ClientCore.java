@@ -1,44 +1,53 @@
 package NativeClient;
 
+import Model.RPCException;
 import RPCNet.Net;
 import RPCNet.NetCore;
 import org.javatuples.Pair;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 public class ClientCore {
-    private static ConcurrentHashMap<Pair<String,String>, SocketClient> clients = new ConcurrentHashMap<>();
-
-    public static SocketClient register(String host, String port){
-        return register(host,port,new ClientConfig());
+    public static SocketClient get(String netName) throws RPCException {
+        Net net = NetCore.get(netName);
+        if(net != null){
+            return get(net);
+        }
+        else throw new RPCException(RPCException.ErrorCode.Core, String.format("%s Net未找到！", netName));
+    }
+    public static SocketClient get(Net net) throws RPCException {
+        return net.getClient();
+    }
+    public static SocketClient register(Net net,String host, String port){
+        return register(net,host,port,new ClientConfig());
     }
 
-    public static SocketClient register(String host, String port, ClientConfig config){
+    public static SocketClient register(Net net,String host, String port, ClientConfig config){
         Pair<String,String> key = new Pair<>(host,port);
         SocketClient socketClient = null;
-        socketClient = clients.get(key);
+        socketClient = net.getClient();
         if(socketClient == null){
-            Net net = NetCore.Get(key);
             if(net != null){
-                socketClient = new SocketClient(key,config);
-                clients.put(key, socketClient);
+                socketClient = new SocketClient(net.getName(),key,config);
+                net.setClient(socketClient);
                 SocketClient finalSocketClient = socketClient;
                 net.setClientRequestSend(finalSocketClient::send);
             }
         }
         return socketClient;
     }
-    public static SocketClient getClient(String ip, String port){
-        Pair<String,String> key = new Pair<>(ip,port);
-        return clients.get(key);
+
+    public static boolean unregister(String netName){
+        Net net = NetCore.get(netName);
+        return unregister(net);
     }
-    public static void unregister(String ip,String port){
-        Pair<String,String> key = new Pair<>(ip,port);
-        SocketClient echoClient;
-        echoClient = clients.get(key);
+
+    public static boolean unregister(Net net){
+        SocketClient echoClient= net.getClient();
         if(echoClient != null){
             echoClient.disconnect();
-            clients.remove(key);
+            net.setClient(null);
+            net.setClientRequestSend(null);
+            return true;
         }
+        return false;
     }
 }

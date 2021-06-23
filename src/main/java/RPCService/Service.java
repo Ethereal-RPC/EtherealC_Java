@@ -11,7 +11,8 @@ public class Service {
     private HashMap<String,Method> methods = new HashMap<>();
     private RPCTypeConfig types;
     private Object instance = null;
-
+    private String netName;
+    private ServiceConfig config;
     public Object getInstance() {
         return instance;
     }
@@ -35,10 +36,11 @@ public class Service {
         this.methods = methods;
     }
 
-    public void register(Object instance, RPCTypeConfig type) throws RPCException {
+    public void register(Object instance,String netName, ServiceConfig config) throws RPCException {
         this.instance = instance;
+        this.netName = netName;
+        this.config = config;
         StringBuilder methodId = new StringBuilder();
-        this.types = type;
         for(Method method : instance.getClass().getMethods())
         {
             int modifier = method.getModifiers();
@@ -49,20 +51,20 @@ public class Service {
                     if(annotation.parameters().length == 0){
                         String type_name;
                         for(Class<?> parameter_type : method.getParameterTypes()){
-                            RPCType rpcType = type.getTypesByType().get(parameter_type);
+                            RPCType rpcType = config.getTypes().getTypesByType().get(parameter_type);
                             if(rpcType != null) {
                                 methodId.append("-").append(rpcType.getName());
                             }
-                            else throw new RPCException(String.format("Java中的%s类型参数尚未注册,请注意是否是泛型导致！",parameter_type.getName()));
+                            else config.onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("Java中的%s类型参数尚未注册,请注意是否是泛型导致！",parameter_type.getName())),this);
                         }
                     }
                     else {
                         String[] types_name = annotation.parameters();
                         for(String type_name : types_name){
-                            if(type.getTypesByName().containsKey(type_name)){
+                            if(config.getTypes().getTypesByName().containsKey(type_name)){
                                 methodId.append("-").append(type_name);
                             }
-                            else throw new RPCException(String.format("Java中的%s抽象类型参数尚未注册,请注意是否是泛型导致！",type_name));
+                            else config.onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("Java中的%s抽象类型参数尚未注册,请注意是否是泛型导致！",type_name)),this);
                         }
                     }
                     methods.put(methodId.toString(),method);
@@ -70,5 +72,13 @@ public class Service {
                 }
             }
         }
+    }
+
+    public ServiceConfig getConfig() {
+        return config;
+    }
+
+    public void setConfig(ServiceConfig config) {
+        this.config = config;
     }
 }

@@ -4,6 +4,7 @@ import Model.ClientRequestModel;
 import Model.ClientResponseModel;
 import java.lang.reflect.Method;
 
+import Model.RPCLog;
 import Model.ServerRequestModel;
 import RPCNet.NetConfig;
 import RPCNet.NetCore;
@@ -51,7 +52,7 @@ public class CustomHeartbeatHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("---" + ctx.channel().remoteAddress() + " is state---");
+        socketClient.getConfig().onLog(RPCLog.LogCode.Runtime,"---" + ctx.channel().remoteAddress() + " is state---",socketClient);
     }
 
     @Override
