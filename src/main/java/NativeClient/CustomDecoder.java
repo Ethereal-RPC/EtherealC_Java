@@ -27,7 +27,7 @@ public class CustomDecoder extends ByteToMessageDecoder {
     private int dynamicAdjustBufferCount = -1;
     public CustomDecoder(String netName,Pair<String,String> clientKey, ClientConfig config){
         this.config = config;
-
+        this.netName = netName;
         this.clientKey = clientKey;
     }
     @Override

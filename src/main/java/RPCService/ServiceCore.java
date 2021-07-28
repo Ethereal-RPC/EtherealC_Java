@@ -20,22 +20,23 @@ public class ServiceCore {
     }
 
 
-    public static void register(Object instance,Net net, String serviceName, RPCTypeConfig type) throws RPCException {
-        register(instance,net,serviceName,new ServiceConfig(type));
+    public static Service register(Object instance,Net net, String serviceName, RPCTypeConfig type) throws RPCException {
+        return register(instance,net,serviceName,new ServiceConfig(type));
     }
-    public static void register(Class instanceClass,Net net,String serviceName, RPCTypeConfig type) throws RPCException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        register(instanceClass.getDeclaredConstructor().newInstance(),net,serviceName,new ServiceConfig(type));
+    public static Service register(Class instanceClass,Net net,String serviceName, RPCTypeConfig type) throws RPCException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        return register(instanceClass.getDeclaredConstructor().newInstance(),net,serviceName,new ServiceConfig(type));
     }
-    public static void register(Class instanceClass,Net net,String serviceName, ServiceConfig config) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, RPCException {
-        register(instanceClass.getDeclaredConstructor().newInstance(),net,serviceName,config);
+    public static Service register(Class instanceClass,Net net,String serviceName, ServiceConfig config) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, RPCException {
+        return register(instanceClass.getDeclaredConstructor().newInstance(),net,serviceName,config);
     }
-    public static void register(Object instance,Net net,String serviceName, ServiceConfig config) throws RPCException {
+    public static Service register(Object instance,Net net,String serviceName, ServiceConfig config) throws RPCException {
         Service service = net.getServices().get(serviceName);
         if(service == null){
             try{
                 service = new Service();
                 service.register(instance,net.getName(),config);
                 net.getServices().put(serviceName,service);
+                return service;
             }
             catch (Exception err){
                 throw new RPCException(RPCException.ErrorCode.Core,serviceName + "异常报错，销毁注册\n" + err.getMessage());

@@ -13,16 +13,18 @@ public class NetCore {
     }
 
 
-    public static void register(String name) throws RPCException {
-        register(name, new NetConfig());
+    public static Net register(String name) throws RPCException {
+        return register(name, new NetConfig());
     }
-    public static void register(String name, NetConfig config) throws RPCException {
+    public static Net register(String name, NetConfig config) throws RPCException {
         Net net = nets.get(name);
         if (net == null)
         {
             net = new Net();
             net.setConfig(config);
+            net.setName(name);
             nets.put(name, net);
+            return net;
         }
         else throw new RPCException(RPCException.ErrorCode.Core,String.format("%s Net 已经注册",name));
     }

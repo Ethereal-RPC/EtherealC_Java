@@ -21,6 +21,10 @@ public class Net {
     private String name;
     private SocketClient client;
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getName() {
         return name;
     }
@@ -126,6 +130,6 @@ public class Net {
             }
             else throw new RPCException(RPCException.ErrorCode.Runtime,String.format("%s-%s-%s-%s RequestId未找到",name,response.getService(),id));
         }
-        config.onLog(RPCLog.LogCode.Runtime,String.format("%s-%s-%s Request未找到",name,response.getService()),this);
+        config.onLog(RPCLog.LogCode.Runtime,String.format("%s-%s Request未找到",name,response.getService()),this);
     }
 }
