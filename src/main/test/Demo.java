@@ -15,7 +15,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public class Demo {
     public static void main(String[] args) throws RPCException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
-        //注册数据类型
+        //注册数据类型 wwr
         RPCTypeConfig types = new RPCTypeConfig();
         types.add(Integer.class,"int");
         types.add(User.class,"user");
