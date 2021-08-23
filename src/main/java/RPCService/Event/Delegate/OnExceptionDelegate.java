@@ -4,5 +4,5 @@ import RPCRequest.Request;
 import RPCService.Service;
 
 public interface OnExceptionDelegate {
-    void OnException(Exception exception, Service service);
+    void OnException(Exception exception, Service service) throws Exception;
 }

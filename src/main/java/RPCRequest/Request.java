@@ -1,14 +1,13 @@
 package RPCRequest;
 
-import Model.ClientRequestModel;
-import Model.ClientResponseModel;
-import Model.RPCException;
-import Model.RPCType;
+import Model.*;
+import NativeClient.SocketClient;
 import RPCNet.Net;
 import RPCNet.NetCore;
+import RPCRequest.Event.ExceptionEvent;
+import RPCRequest.Event.LogEvent;
 
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
@@ -18,25 +17,73 @@ import java.util.concurrent.ConcurrentHashMap;
 public  class Request implements InvocationHandler {
     private final ConcurrentHashMap<Integer,ClientRequestModel> tasks = new ConcurrentHashMap<>();
     private final Random random = new Random();
-    private String serviceName;
+    private String name;
     private String netName;
     private RequestConfig config;
+    private SocketClient client;
 
+    public SocketClient getClient() {
+        return client;
+    }
+
+    public void setClient(SocketClient client) {
+        this.client = client;
+    }
+
+    private ExceptionEvent exceptionEvent = new ExceptionEvent();
+    private LogEvent logEvent = new LogEvent();
+    public RequestConfig getConfig() {
+        return config;
+    }
+    public void setConfig(RequestConfig config) {
+        this.config = config;
+    }
     public ConcurrentHashMap<Integer, ClientRequestModel> getTasks() {
         return tasks;
     }
 
+    public String getName() {
+        return name;
+    }
 
-    public static <T> T register(Class<T> interface_class,String netName, String serviceName, RequestConfig config){
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getNetName() {
+        return netName;
+    }
+
+    public void setNetName(String netName) {
+        this.netName = netName;
+    }
+
+    public ExceptionEvent getExceptionEvent() {
+        return exceptionEvent;
+    }
+
+    public void setExceptionEvent(ExceptionEvent exceptionEvent) {
+        this.exceptionEvent = exceptionEvent;
+    }
+
+    public LogEvent getLogEvent() {
+        return logEvent;
+    }
+
+    public void setLogEvent(LogEvent logEvent) {
+        this.logEvent = logEvent;
+    }
+
+    public static <T> T register(Class<T> interface_class, String netName, String serviceName, RequestConfig config){
         Request proxy = new Request();
-        proxy.serviceName = serviceName;
+        proxy.name = serviceName;
         proxy.netName = netName;
         proxy.config = config;
         return (T) Proxy.newProxyInstance(Request.class.getClassLoader(),new Class<?>[]{interface_class}, proxy);
     }
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws RPCException, InvocationTargetException, IllegalAccessException {
+    public Object invoke(Object proxy, Method method, Object[] args) throws Exception {
         Annotation.RPCRequest annotation = method.getAnnotation(Annotation.RPCRequest.class);
         if(annotation != null){
             StringBuilder methodId = new StringBuilder(method.getName());
@@ -54,7 +101,7 @@ public  class Request implements InvocationHandler {
                         methodId.append("-").append(rpcType.getName());
                         array[j] = rpcType.getSerialize().Serialize(args[i]);
                     }
-                    else config.onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("Java中的%s类型参数尚未注册！",parameters[i].getName())),this);
+                    else onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("Java中的%s类型参数尚未注册！",parameters[i].getName())));
                 }
             }
             else {
@@ -66,20 +113,19 @@ public  class Request implements InvocationHandler {
                             methodId.append("-").append(rpcType.getName());
                             array[j] = rpcType.getSerialize().Serialize(args[i]);
                         }
-                        else config.onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("方法体%s中的抽象类型为%s的类型尚未注册！",method.getName(),types_name[i])),this);
+                        else onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("方法体%s中的抽象类型为%s的类型尚未注册！",method.getName(),types_name[i])));
                     }
                 }
-                else config.onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("方法体%s中RPCMethod注解与实际参数数量不符,@RPCRequest:%d个,Method:%d个",method.getName(),types_name.length,args.length)),this);
+                else onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("方法体%s中RPCMethod注解与实际参数数量不符,@RPCRequest:%d个,Method:%d个",method.getName(),types_name.length,args.length)));
             }
-            ClientRequestModel request = new ClientRequestModel("2.0", serviceName, methodId.toString(),array);
+            ClientRequestModel request = new ClientRequestModel("2.0", name, methodId.toString(),array);
             Net net = NetCore.get(netName);
             if(net == null){
-                config.onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("%s-%s-%s方法未找到NetConfig",netName, serviceName,methodId)),this);
+                onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("%s-%s-%s方法未找到NetConfig",netName, name,methodId)));
             }
             Class<?> return_type = method.getReturnType();
             if(return_type.equals(Void.TYPE)){
-                net.getClientRequestSend().ClientRequestSend(request);
-                return null;
+                client.send(request);
             }
             else{
                 int id = random.nextInt();
@@ -88,34 +134,53 @@ public  class Request implements InvocationHandler {
                 }
                 request.setId(Integer.toString(id));
                 tasks.put(id,request);
-                int timeout = config.getTimeout();
-                if(annotation.timeout() != -1)timeout = annotation.timeout();
-                net.getClientRequestSend().ClientRequestSend(request);
-                ClientResponseModel respond = request.getResult(timeout);
-                if(respond != null && respond.getResult() != null){
-                    if(respond.getError()!=null){
-                        if(respond.getError().getCode() == 0){
-                            config.onException(new RPCException(RPCException.ErrorCode.Runtime,"用户权限不足"),this);
+                try {
+                    int timeout = config.getTimeout();
+                    if(annotation.timeout() != -1)timeout = annotation.timeout();
+                    if(client.send(request)){
+                        ClientResponseModel respond = request.getResult(timeout);
+                        if(respond != null && respond.getResult() != null){
+                            if(respond.getError()!=null){
+                                onException(new RPCException(RPCException.ErrorCode.Runtime,respond.getError().getMessage()));
+                            }
+                            RPCType rpcType = config.getType().getTypesByName().get(respond.getResultType());
+                            if(rpcType!=null){
+                                return rpcType.getDeserialize().Deserialize(respond.getResult());
+                            }
+                            else onException(new RPCException(RPCException.ErrorCode.Runtime,respond.getResultType() + "抽象数据类型尚未注册"));
                         }
                     }
-                    RPCType rpcType = config.getType().getTypesByName().get(respond.getResultType());
-                    if(rpcType!=null){
-                        return rpcType.getDeserialize().Deserialize(respond.getResult());
-                    }
-                    else config.onException(new RPCException(RPCException.ErrorCode.Runtime,respond.getResultType() + "抽象数据类型尚未注册"),this);
-                    return null;
                 }
-                else return null;
+                finally {
+                    tasks.remove(id);
+                }
             }
+            return null;
         }
         else return method.invoke(this,args);
     }
-
-    public RequestConfig getConfig() {
-        return config;
+    public void OnClientException(Exception exception, SocketClient client) throws Exception {
+        onException(exception);
     }
 
-    public void setConfig(RequestConfig config) {
-        this.config = config;
+    public void OnClientLog(RPCLog log, SocketClient client)
+    {
+        onLog(log);
+    }
+
+    public void onException(RPCException.ErrorCode code, String message) throws Exception {
+        onException(new RPCException(code,message));
+    }
+    public void onException(Exception exception) throws Exception {
+        exceptionEvent.OnEvent(exception,this);
+        throw exception;
+    }
+
+    public void onLog(RPCLog.LogCode code, String message){
+        onLog(new RPCLog(code,message));
+    }
+
+    public void onLog(RPCLog log){
+        logEvent.OnEvent(log,this);
     }
 }

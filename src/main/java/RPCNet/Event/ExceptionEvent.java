@@ -11,7 +11,7 @@ public class ExceptionEvent {
 
     public void register(OnExceptionDelegate delegate){
         synchronized (listeners){
-            listeners.add(delegate);
+            if(!listeners.contains(delegate)) listeners.add(delegate);
         }
     }
     public void unRegister(OnExceptionDelegate delegate){

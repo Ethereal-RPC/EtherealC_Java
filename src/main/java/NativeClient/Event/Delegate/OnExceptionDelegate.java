@@ -3,5 +3,5 @@ package NativeClient.Event.Delegate;
 import NativeClient.SocketClient;
 
 public interface OnExceptionDelegate {
-    void OnException(Exception exception, SocketClient client);
+    void OnException(Exception exception, SocketClient client) throws Exception;
 }

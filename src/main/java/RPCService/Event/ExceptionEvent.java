@@ -11,7 +11,7 @@ public class ExceptionEvent {
 
     public void register(OnExceptionDelegate delegate){
         synchronized (listeners){
-            listeners.add(delegate);
+            if(!listeners.contains(delegate)) listeners.add(delegate);
         }
     }
     public void unRegister(OnExceptionDelegate delegate){
@@ -19,7 +19,7 @@ public class ExceptionEvent {
             listeners.remove(delegate);
         }
     }
-    public void OnEvent(Exception exception, Service service){
+    public void OnEvent(Exception exception, Service service) throws Exception {
         synchronized (listeners){
             for (OnExceptionDelegate delegate:listeners) {
                 delegate.OnException(exception,service);

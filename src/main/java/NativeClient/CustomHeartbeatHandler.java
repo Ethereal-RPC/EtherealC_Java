@@ -51,12 +51,12 @@ public class CustomHeartbeatHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        socketClient.getConfig().onLog(RPCLog.LogCode.Runtime,"---" + ctx.channel().remoteAddress() + " is state---",socketClient);
+    public void channelActive(ChannelHandlerContext ctx) {
+        socketClient.onLog(RPCLog.LogCode.Runtime,"---" + ctx.channel().remoteAddress() + " is state---");
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
         socketClient.doConnect();
     }
 

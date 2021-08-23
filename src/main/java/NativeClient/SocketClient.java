@@ -7,6 +7,10 @@ import java.util.concurrent.TimeUnit;
 
 import Model.RPCException;
 import Model.RPCLog;
+import NativeClient.Event.ConnectFailEvent;
+import NativeClient.Event.ConnectSuccessEvent;
+import NativeClient.Event.ExceptionEvent;
+import NativeClient.Event.LogEvent;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -36,11 +40,63 @@ public class SocketClient {
     private Random random = new Random();
     private ClientConfig config;
     private String netName;
+    private String serviceName;
     private Pair<String,String> clientKey;
+    private ExceptionEvent exceptionEvent = new ExceptionEvent();
+    private LogEvent logEvent = new LogEvent();
+    private ConnectSuccessEvent connectSuccessEvent = new ConnectSuccessEvent();
+    private ConnectFailEvent connectFailEvent = new ConnectFailEvent();
 
-    public SocketClient(String netName,Pair<String,String> clientKey, ClientConfig config) {
+    public Channel getChannel() {
+        return channel;
+    }
+    public void setChannel(Channel channel) {
+        this.channel = channel;
+    }
+
+    public ConnectSuccessEvent getConnectSuccessEvent() {
+        return connectSuccessEvent;
+    }
+    public void setConnectSuccessEvent(ConnectSuccessEvent connectSuccessEvent) {
+        this.connectSuccessEvent = connectSuccessEvent;
+    }
+    public ConnectFailEvent getConnectFailEvent() {
+        return connectFailEvent;
+    }
+    public void setConnectFailEvent(ConnectFailEvent connectFailEvent) {
+        this.connectFailEvent = connectFailEvent;
+    }
+
+    public ExceptionEvent getExceptionEvent() {
+        return exceptionEvent;
+    }
+    public void setExceptionEvent(ExceptionEvent exceptionEvent) {
+        this.exceptionEvent = exceptionEvent;
+    }
+    public LogEvent getLogEvent() {
+        return logEvent;
+    }
+    public void setLogEvent(LogEvent logEvent) {
+        this.logEvent = logEvent;
+    }
+    public String getServiceName() {
+        return serviceName;
+    }
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
+    public String getNetName() {
+        return netName;
+    }
+
+    public void setNetName(String netName) {
+        this.netName = netName;
+    }
+
+    public SocketClient(String netName,String serviceName,Pair<String,String> clientKey, ClientConfig config) {
         this.config = config;
         this.netName = netName;
+        this.serviceName = serviceName;
         this.clientKey = clientKey;
     }
     public Pair<String, String> getClientKey() {
@@ -64,7 +120,7 @@ public class SocketClient {
                     .handler(new ChannelInitializer<SocketChannel>() {    //5
                         @Override
                         public void initChannel(SocketChannel ch) {
-                            ch.pipeline().addLast(new CustomDecoder(netName,clientKey,config));
+                            ch.pipeline().addLast(new CustomDecoder(netName,serviceName,clientKey,config));
                             ch.pipeline().addLast(new IdleStateHandler(0,0,5));
                             ch.pipeline().addLast(new CustomHeartbeatHandler(SocketClient.this));
                         }
@@ -80,7 +136,7 @@ public class SocketClient {
         }
     }
 
-    public void doConnect() {
+    protected void doConnect() {
         if (channel != null && channel.isActive()) {
             return;
         }
@@ -88,11 +144,11 @@ public class SocketClient {
         future.addListener((ChannelFutureListener) futureListener -> {
             if (futureListener.isSuccess()) {
                 channel = futureListener.channel();
-                if(config.getConnectSuccess()!=null)config.getConnectSuccess().OnConnectSuccess();
-                config.onLog(RPCLog.LogCode.Runtime,"Connect to server successfully!",this);
+                onConnectSuccess();
+                onLog(RPCLog.LogCode.Runtime,"Connect to server successfully!");
             }
             else {
-                config.onException(RPCException.ErrorCode.Runtime,"Failed to connect to server, try connect after 10s",this);
+                onException(RPCException.ErrorCode.Runtime,"Failed to connect to server, try connect after 10s");
                 futureListener.channel().eventLoop().schedule(new Runnable() {
                     @Override
                     public void run() {
@@ -106,7 +162,7 @@ public class SocketClient {
         channel.disconnect();
         channel.close();
     }
-    public void send(ClientRequestModel request) {
+    public boolean send(ClientRequestModel request) {
         if(channel!=null && channel.isActive()){
             byte[] body =  config.getClientRequestModelSerialize().Serialize(request).getBytes(config.getCharset());
             int dataLength = body.length;  //读取消息的长度
@@ -125,5 +181,31 @@ public class SocketClient {
             out.writeBytes(body);  //消息体中包含我们要发送的数据
             channel.writeAndFlush(out);
         }
+        return false;
+    }
+
+
+    public void onException(RPCException.ErrorCode code, String message) throws Exception {
+        onException(new RPCException(code,message));
+    }
+
+    public void onException(Exception exception) throws Exception {
+        exceptionEvent.OnEvent(exception,this);
+        throw exception;
+    }
+
+    public void onLog(RPCLog.LogCode code, String message){
+        onLog(new RPCLog(code,message));
+    }
+
+    public void onLog(RPCLog log){
+        logEvent.OnEvent(log,this);
+    }
+
+    public void onConnectSuccess()  {
+        connectSuccessEvent.OnEvent(this);
+    }
+    public void onConnectFailEvent() throws Exception {
+        connectFailEvent.OnEvent(this);
     }
 }

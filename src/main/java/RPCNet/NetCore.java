@@ -1,11 +1,17 @@
 package RPCNet;
 
 import Model.*;
+import RPCNet.Event.ExceptionEvent;
+import RPCNet.Event.LogEvent;
+import RPCRequest.Request;
+import RPCRequest.RequestCore;
 
 import java.util.HashMap;
 
 public class NetCore {
+
     private static HashMap<String, Net> nets = new HashMap();
+
 
     public static Net get(String name)
     {
@@ -26,19 +32,27 @@ public class NetCore {
             nets.put(name, net);
             return net;
         }
-        else throw new RPCException(RPCException.ErrorCode.Core,String.format("%s Net 已经注册",name));
+        else return null;
     }
 
-    public static Boolean unregister(String name) throws RPCException {
+    public static Boolean unregister(String name)  {
         Net net = get(name);
         if(net != null){
             return unregister(net);
         }
-        else throw new RPCException(RPCException.ErrorCode.Core, String.format("%s Net未找到", name));
+        else return true;
     }
     public static Boolean unregister(Net net)
     {
+        //清除请求上的连接
+        for(Object request : net.getRequests().values()){
+            ((Request)request).getClient().disconnect();
+        }
+        net.getRequests().clear();
+        net.getServices().clear();
         NetConfig config = null;
-        return nets.remove(net,config);
+        nets.remove(net.getName());
+        return true;
     }
+
 }

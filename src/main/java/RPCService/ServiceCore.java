@@ -4,18 +4,21 @@ import Model.RPCException;
 
 import java.lang.reflect.InvocationTargetException;
 
+import Model.RPCLog;
 import Model.RPCTypeConfig;
 import RPCNet.Net;
 import RPCNet.NetCore;
+import RPCService.Event.ExceptionEvent;
+import RPCService.Event.LogEvent;
 
 public class ServiceCore {
 
-    public static Service get(String netName,String serviceName) throws RPCException {
+    public static Service get(String netName,String serviceName)  {
         Net net = NetCore.get(netName);
-        if(net == null)throw new RPCException(RPCException.ErrorCode.Runtime,String.format("{%s} Net未找到！",netName));
+        if(net == null)return null;
         return get(net,serviceName);
     }
-    public static Service get(Net net,String serviceName) throws RPCException {
+    public static Service get(Net net,String serviceName)  {
         return net.getServices().get(serviceName);
     }
 
@@ -36,6 +39,8 @@ public class ServiceCore {
                 service = new Service();
                 service.register(instance,net.getName(),config);
                 net.getServices().put(serviceName,service);
+                service.getExceptionEvent().register(net::OnServiceException);
+                service.getLogEvent().register(net::OnServiceLog);
                 return service;
             }
             catch (Exception err){
