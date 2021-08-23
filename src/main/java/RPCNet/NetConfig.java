@@ -2,11 +2,14 @@ package RPCNet;
 
 import Model.RPCException;
 import Model.RPCLog;
+import NativeClient.ClientConfig;
 import NativeClient.SocketClient;
 import RPCNet.Event.ExceptionEvent;
 import RPCNet.Event.LogEvent;
+import org.javatuples.Triplet;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 /**
  * @ProjectName: YiXian_Client
@@ -21,28 +24,40 @@ import java.lang.reflect.InvocationTargetException;
  * @Version: 1.0
  */
 public class NetConfig {
-    private ExceptionEvent exceptionEvent = new ExceptionEvent();
-    private LogEvent logEvent = new LogEvent();
+    /// <summary>
+    /// 分布式模式是否开启
+    /// </summary>
+    private Boolean netNodeMode = false;
+    /// <summary>
+    /// 分布式IP组
+    /// </summary>
+    private List<Triplet<String, String, ClientConfig>> netNodeIps;
+    /// <summary>
+    /// 服务注册心跳间隔
+    /// </summary>
+    private int netNodeHeartInterval = 6000;
 
-    public ExceptionEvent getExceptionEvent() {
-        return exceptionEvent;
+    public Boolean getNetNodeMode() {
+        return netNodeMode;
     }
 
-    public LogEvent getLogEvent() {
-        return logEvent;
-    }
-    public void onException(RPCException.ErrorCode code, String message, Net net) throws RPCException {
-        onException(new RPCException(code,message),net);
-    }
-    public void onException(RPCException exception, Net net) throws RPCException {
-        exceptionEvent.OnEvent(exception,net);
-        throw exception;
+    public void setNetNodeMode(Boolean netNodeMode) {
+        this.netNodeMode = netNodeMode;
     }
 
-    public void onLog(RPCLog.LogCode code, String message, Net net){
-        onLog(new RPCLog(code,message),net);
+    public List<Triplet<String, String, ClientConfig>> getNetNodeIps() {
+        return netNodeIps;
     }
-    public void onLog(RPCLog log, Net net){
-        logEvent.OnEvent(log,net);
+
+    public void setNetNodeIps(List<Triplet<String, String, ClientConfig>> netNodeIps) {
+        this.netNodeIps = netNodeIps;
+    }
+
+    public int getNetNodeHeartInterval() {
+        return netNodeHeartInterval;
+    }
+
+    public void setNetNodeHeartInterval(int netNodeHeartInterval) {
+        this.netNodeHeartInterval = netNodeHeartInterval;
     }
 }

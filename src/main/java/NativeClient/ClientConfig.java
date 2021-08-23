@@ -15,23 +15,14 @@ public class ClientConfig {
     private int maxBufferSize = 10240;
     private Charset charset = StandardCharsets.UTF_8;
     private int dynamicAdjustBufferCount = 1;
-    private boolean nettyAdaptBuffer = false;
+    private boolean nettyAdaptBuffer = false;//是否开启动态缓冲池
     private ClientRequestModelSerializeDelegate clientRequestModelSerialize;
     private ServerRequestModelDeserializeDelegate serverRequestModelDeserialize;
     private ClientResponseModelDeserializeDelegate clientResponseModelDeserialize;
-    private ExceptionEvent exceptionEvent = new ExceptionEvent();
-    private LogEvent logEvent = new LogEvent();
-
-    public ExceptionEvent getExceptionEvent() {
-        return exceptionEvent;
-    }
-
-    public LogEvent getLogEvent() {
-        return logEvent;
-    }
 
 
     public ClientConfig(){
+        //模型=>类=>实例化类（实体)=>数据(字节、文本）【序列化】=>发送
         clientRequestModelSerialize = obj -> Utils.gson.toJson(obj,ClientRequestModel.class);
         serverRequestModelDeserialize = obj -> Utils.gson.fromJson(obj,ServerRequestModel.class);
         clientResponseModelDeserialize = obj -> Utils.gson.fromJson(obj,ClientResponseModel.class);
@@ -85,7 +76,6 @@ public class ClientConfig {
         this.charset = charset;
     }
 
-    private ConnectSuccessDelegate connectSuccess;
 
     public int getBufferSize() {
         return bufferSize;
@@ -93,14 +83,6 @@ public class ClientConfig {
 
     public void setBufferSize(int bufferSize) {
         this.bufferSize = bufferSize;
-    }
-
-    public ConnectSuccessDelegate getConnectSuccess() {
-        return connectSuccess;
-    }
-
-    public void setConnectSuccess(ConnectSuccessDelegate connectSuccess) {
-        this.connectSuccess = connectSuccess;
     }
 
     public int getMaxBufferSize() {
@@ -111,18 +93,4 @@ public class ClientConfig {
         this.maxBufferSize = maxBufferSize;
     }
 
-    public void onException(RPCException.ErrorCode code, String message, SocketClient client) throws RPCException {
-        onException(new RPCException(code,message),client);
-    }
-    public void onException(RPCException exception, SocketClient client) throws RPCException {
-        exceptionEvent.OnEvent(exception,client);
-        throw exception;
-    }
-
-    public void onLog(RPCLog.LogCode code, String message, SocketClient client){
-        onLog(new RPCLog(code,message),client);
-    }
-    public void onLog(RPCLog log, SocketClient client){
-        logEvent.OnEvent(log,client);
-    }
 }

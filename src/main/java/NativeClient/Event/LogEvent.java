@@ -11,7 +11,7 @@ public class LogEvent {
 
     public void register(OnLogDelegate delegate){
         synchronized (listeners){
-            listeners.add(delegate);
+            if(!listeners.contains(delegate)) listeners.add(delegate);
         }
     }
     public void unRegister(OnLogDelegate delegate){

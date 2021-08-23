@@ -19,22 +19,25 @@ public class CustomDecoder extends ByteToMessageDecoder {
     private int futureSize = 27;//后期看情况加
     private ClientConfig config;
     private String netName;
+    private String serviceName;
     private Pair<String,String> clientKey;
 
     //下面这部分的byte用于接收数据
     private byte  pattern;
     private byte[] future = new byte[futureSize];
     private int dynamicAdjustBufferCount = -1;
-    public CustomDecoder(String netName,Pair<String,String> clientKey, ClientConfig config){
+    public CustomDecoder(String netName,String serviceName,Pair<String,String> clientKey, ClientConfig config){
         this.config = config;
         this.netName = netName;
+        this.serviceName = serviceName;
         this.clientKey = clientKey;
     }
     @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws RPCException {
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         in.resetReaderIndex();
         while(in.readerIndex() < in.writerIndex()){
             int count = in.writerIndex() - in.readerIndex();
+
             if(headSize < count){
                 int body_length = in.getIntLE(in.readerIndex());
                 byte pattern = in.getByte(in.readerIndex() + bodySize);
@@ -59,6 +62,7 @@ public class CustomDecoder extends ByteToMessageDecoder {
                         }
                         if(pattern == 0){
                             //Log.d(Tag.RemoteRepository,"[服-请求]:" + data);
+                            //服务器模型的反序列化 实体
                             ServerRequestModel serverRequestModel = config.getServerRequestModelDeserialize().Deserialize(data);
                             net.getServerRequestReceive().ServerRequestReceive(serverRequestModel);
                         }
@@ -70,7 +74,7 @@ public class CustomDecoder extends ByteToMessageDecoder {
                     }
                     catch (Exception e){
                         e.printStackTrace();
-                        config.onException(RPCException.ErrorCode.Runtime,e.getMessage(),null);
+                        ClientCore.get(netName,serviceName).onException(RPCException.ErrorCode.Runtime,e.getMessage());
                     }
                     in.readerIndex(in.readerIndex() + length);
                 }
@@ -87,9 +91,8 @@ public class CustomDecoder extends ByteToMessageDecoder {
                             return;
                         }
                         else {
-
-                            config.onException(new RPCException(RPCException.ErrorCode.Runtime, String.format("%s-%s:用户请求数据量太大，中止接收！",
-                                    netName + ":" + ctx.channel().remoteAddress())),null);
+                            ClientCore.get(netName,serviceName).onException(new RPCException(RPCException.ErrorCode.Runtime, String.format("%s-%s:用户请求数据量太大，中止接收！",
+                                    netName + ":" + ctx.channel().remoteAddress())));
                         }
                     }
                     return;
