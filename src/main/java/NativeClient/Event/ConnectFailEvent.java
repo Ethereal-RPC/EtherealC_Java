@@ -19,7 +19,7 @@ public class ConnectFailEvent {
             listeners.remove(delegate);
         }
     }
-    public void OnEvent(SocketClient client) throws Exception {
+    public void onEvent(SocketClient client) throws Exception {
         synchronized (listeners){
             for (OnConnectFailDelegate delegate:listeners) {
                 delegate.OnConnectFail(client);

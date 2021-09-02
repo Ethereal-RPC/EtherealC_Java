@@ -18,7 +18,7 @@ public class ExceptionEvent {
             listeners.remove(delegate);
         }
     }
-    public void OnEvent(Exception exception,SocketClient client) throws Exception {
+    public void onEvent(Exception exception, SocketClient client) throws Exception {
         synchronized (listeners){
             for (OnExceptionDelegate delegate:listeners) {
                 delegate.OnException(exception,client);

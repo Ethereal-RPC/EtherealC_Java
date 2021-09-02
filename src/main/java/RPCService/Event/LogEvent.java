@@ -20,7 +20,7 @@ public class LogEvent {
             listeners.remove(delegate);
         }
     }
-    public void OnEvent(RPCLog log, Service service){
+    public void onEvent(RPCLog log, Service service){
         synchronized (listeners){
             for (OnLogDelegate delegate:listeners) {
                 delegate.OnLog(log,service);

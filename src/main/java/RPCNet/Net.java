@@ -18,7 +18,6 @@ import RPCRequest.RequestCore;
 import RPCService.Service;
 import RPCService.ServiceCore;
 import org.javatuples.Triplet;
-import sun.util.resources.cldr.ewo.CalendarData_ewo_CM;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -127,11 +126,11 @@ public class Net {
             if(requestModel != null){
                 requestModel.setResult(response);
             }
-            else throw new RPCException(RPCException.ErrorCode.Runtime,String.format("%s-%s-%s-%s RequestId未找到",name,response.getService(),id));
+            else throw new RPCException(RPCException.ErrorCode.Runtime,String.format("%s-%s-%s RequestId未找到",name,response.getService(),id));
         }
-        onLog(RPCLog.LogCode.Runtime,String.format("%s-%s Request未找到",name,response.getService()));
+        else onLog(RPCLog.LogCode.Runtime,String.format("%s-%s Request未找到",name,response.getService()));
     }
-    public boolean publish() throws RPCException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
+    public boolean publish() throws Exception {
         //分布式模式
         if(config.getNetNodeMode()){
             //注册数据类型
@@ -173,7 +172,7 @@ public class Net {
         }
         else {
             for(Object _request : requests.values()){
-                Request request = (Request)_request;
+                Request request = ((Request)Proxy.getInvocationHandler(_request));
                 request.getClient().start();
             }
         }
@@ -184,7 +183,7 @@ public class Net {
         synchronized (connectSign){
             boolean flag = false;
             for(Object _request : requests.values()){
-                Request request = (Request)_request;
+                Request request = (Request)Proxy.getInvocationHandler(_request);
                 if(request.getClient() == null){
                     flag = true;
                     break;
@@ -268,7 +267,7 @@ public class Net {
         onException(new RPCException(code,message));
     }
     public void onException(Exception exception) throws Exception {
-        exceptionEvent.OnEvent(exception,this);
+        exceptionEvent.onEvent(exception,this);
         throw exception;
     }
 
@@ -276,7 +275,7 @@ public class Net {
         onLog(new RPCLog(code,message));
     }
     public void onLog(RPCLog log){
-        logEvent.OnEvent(log,this);
+        logEvent.onEvent(log,this);
     }
 
     public void OnRequestException(Exception exception, Request request) throws Exception {

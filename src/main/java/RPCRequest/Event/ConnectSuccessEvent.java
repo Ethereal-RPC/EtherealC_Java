@@ -1,8 +1,9 @@
-package NativeClient.Event;
+package RPCRequest.Event;
 
-import NativeClient.Event.Delegate.OnConnectSuccessDelegate;
-import NativeClient.Event.Delegate.OnExceptionDelegate;
-import NativeClient.SocketClient;
+import Model.RPCLog;
+import RPCRequest.Event.Delegate.OnConnectSuccessDelegate;
+import RPCRequest.Event.Delegate.OnLogDelegate;
+import RPCRequest.Request;
 
 import java.util.Vector;
 
@@ -19,10 +20,10 @@ public class ConnectSuccessEvent {
             listeners.remove(delegate);
         }
     }
-    public void onEvent(SocketClient client)  {
+    public void onEvent(Request request){
         synchronized (listeners){
             for (OnConnectSuccessDelegate delegate:listeners) {
-                delegate.OnConnectSuccess(client);
+                delegate.OnConnectSuccess(request);
             }
         }
     }

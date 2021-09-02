@@ -19,7 +19,7 @@ public class ExceptionEvent {
             listeners.remove(delegate);
         }
     }
-    public void OnEvent(Exception exception, Request request) throws Exception {
+    public void onEvent(Exception exception, Request request) throws Exception {
         synchronized (listeners){
             for (OnExceptionDelegate delegate:listeners) {
                 delegate.OnException(exception,request);

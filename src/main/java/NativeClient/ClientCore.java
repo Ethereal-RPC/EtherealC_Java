@@ -2,6 +2,7 @@ package NativeClient;
 
 import Model.RPCException;
 import Model.RPCLog;
+import NativeClient.Event.Delegate.OnConnectSuccessDelegate;
 import NativeClient.Event.Delegate.OnLogDelegate;
 import RPCNet.Net;
 import RPCNet.NetCore;
@@ -31,7 +32,7 @@ public class ClientCore {
     public static SocketClient register(Net net,String serviceName,String host, String port) throws RPCException {
         Request request = (Request) net.getRequests().get(serviceName);
         if(request != null){
-            return register(request,serviceName,host,port,new ClientConfig());
+            return register(request,host,port,new ClientConfig());
         }
         else throw new RPCException(RPCException.ErrorCode.Core, String.format("%s-%s 未找到！", net.getName(),serviceName));
     }
@@ -39,29 +40,36 @@ public class ClientCore {
     public static SocketClient register(Net net,String serviceName,String host, String port, ClientConfig config) throws RPCException {
         Request request = (Request) net.getRequests().get(serviceName);
         if(request != null){
-            return register(request,serviceName,host,port,config);
+            return register(request,host,port,config);
         }
         else throw new RPCException(RPCException.ErrorCode.Core, String.format("%s-%s 未找到！", net.getName(),serviceName));
     }
     public static SocketClient register(Request request,String host, String port) throws RPCException {
-        return register(request,host,port);
+        return register(request,host,port,new ClientConfig());
     }
 
-    public static SocketClient register(Request request,String serviceName,String host, String port, ClientConfig config) throws RPCException {
+    public static SocketClient register(Request request,String host, String port, ClientConfig config) throws RPCException {
         Pair<String,String> key = new Pair<>(host,port);//二元值
         SocketClient socketClient = null;
         if(request != null){
             socketClient = request.getClient();
             if(socketClient == null){
-                socketClient = new SocketClient(request.getName(),request.getNetName(),key,config);
+                socketClient = new SocketClient(request.getNetName(),request.getName(),key,config);
                 request.setClient(socketClient);
-                SocketClient finalSocketClient = socketClient;
                 socketClient.getLogEvent().register(request::OnClientLog);//日志系统
                 socketClient.getExceptionEvent().register(request::OnClientException);//异常系统
+                socketClient.getConnectSuccessEvent().register(client -> {
+                    Request _request = RequestCore.getRequest(client.getNetName(), client.getServiceName());
+                    if(_request!=null)
+                    {
+                        //tip:特意创建一个线程，调用连接成功的方法，防止里面有线程阻塞的函数造成连接体处于阻塞状态
+                        new Thread(request::onConnectSuccess).start();
+                    }
+                });
             }
             return socketClient;
         }
-        else throw new RPCException(RPCException.ErrorCode.Core, String.format("%s-%s 未找到！",request.getName(),serviceName));
+        else throw new RPCException(RPCException.ErrorCode.Core, String.format("%s-%s 未找到！",request.getNetName(),request.getName()));
     }
 
     public static boolean unregister(String netName,String serviceName)  {

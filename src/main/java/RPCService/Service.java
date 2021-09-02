@@ -103,7 +103,7 @@ public class Service {
         onException(new RPCException(code,message));
     }
     public void onException(Exception exception) throws Exception {
-        exceptionEvent.OnEvent(exception,this);
+        exceptionEvent.onEvent(exception,this);
         throw exception;
     }
 
@@ -111,6 +111,6 @@ public class Service {
         onLog(new RPCLog(code,message));
     }
     public void onLog(RPCLog log){
-        logEvent.OnEvent(log,this);
+        logEvent.onEvent(log,this);
     }
 }

@@ -2,8 +2,7 @@ package RPCRequest;
 
 import Model.*;
 import NativeClient.SocketClient;
-import RPCNet.Net;
-import RPCNet.NetCore;
+import RPCRequest.Event.ConnectSuccessEvent;
 import RPCRequest.Event.ExceptionEvent;
 import RPCRequest.Event.LogEvent;
 
@@ -21,6 +20,17 @@ public class Request implements InvocationHandler {
     private String netName;
     private RequestConfig config;
     private SocketClient client;//连接体
+    //连接成功事件
+    private ConnectSuccessEvent connectSuccessEvent = new ConnectSuccessEvent();
+
+
+    public ConnectSuccessEvent getConnectSuccessEvent() {
+        return connectSuccessEvent;
+    }
+
+    public void setConnectSuccessEvent(ConnectSuccessEvent connectSuccessEvent) {
+        this.connectSuccessEvent = connectSuccessEvent;
+    }
 
     public SocketClient getClient() {
         return client;
@@ -79,7 +89,7 @@ public class Request implements InvocationHandler {
         proxy.name = serviceName;
         proxy.netName = netName;
         proxy.config = config;
-        return (T) Proxy.newProxyInstance(Request.class.getClassLoader(),new Class<?>[]{interface_class}, proxy);
+        return (T)Proxy.newProxyInstance(Request.class.getClassLoader(),new Class<?>[]{interface_class}, proxy);
     }
 
     @Override
@@ -168,7 +178,7 @@ public class Request implements InvocationHandler {
         onException(new RPCException(code,message));
     }
     public void onException(Exception exception) throws Exception {
-        exceptionEvent.OnEvent(exception,this);
+        exceptionEvent.onEvent(exception,this);
         throw exception;
     }
 
@@ -177,6 +187,10 @@ public class Request implements InvocationHandler {
     }
 
     public void onLog(RPCLog log){
-        logEvent.OnEvent(log,this);
+        logEvent.onEvent(log,this);
+    }
+
+    public void onConnectSuccess(){
+        connectSuccessEvent.onEvent(this);
     }
 }

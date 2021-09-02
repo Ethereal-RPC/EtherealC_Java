@@ -19,7 +19,7 @@ public class LogEvent {
             listeners.remove(delegate);
         }
     }
-    public void OnEvent(RPCLog log, SocketClient client){
+    public void onEvent(RPCLog log, SocketClient client){
         synchronized (listeners){
             for (OnLogDelegate delegate:listeners) {
                 delegate.OnLog(log,client);

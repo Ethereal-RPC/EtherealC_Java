@@ -116,7 +116,7 @@ public class SocketClient {
         this.config = config;
     }
 
-    public void start() {
+    public void start() throws Exception {
         NioEventLoopGroup group = new NioEventLoopGroup(2);
         try {
             bootstrap = new Bootstrap();               //1
@@ -139,6 +139,7 @@ public class SocketClient {
             doConnect();
         }
         catch (Exception e){
+            onConnectFailEvent();
             group.shutdownGracefully();
         }
     }
@@ -184,6 +185,7 @@ public class SocketClient {
             out.writeBytes(future);
             out.writeBytes(body);  //消息体中包含我们要发送的数据
             channel.writeAndFlush(out);
+            return true;
         }
         return false;
     }
@@ -194,7 +196,7 @@ public class SocketClient {
     }
 
     public void onException(Exception exception) throws Exception {
-        exceptionEvent.OnEvent(exception,this);
+        exceptionEvent.onEvent(exception,this);
         throw exception;
     }
 
@@ -203,13 +205,13 @@ public class SocketClient {
     }
 
     public void onLog(RPCLog log){
-        logEvent.OnEvent(log,this);
+        logEvent.onEvent(log,this);
     }
 
     public void onConnectSuccess()  {
-        connectSuccessEvent.OnEvent(this);
+        connectSuccessEvent.onEvent(this);
     }
     public void onConnectFailEvent() throws Exception {
-        connectFailEvent.OnEvent(this);
+        connectFailEvent.onEvent(this);
     }
 }

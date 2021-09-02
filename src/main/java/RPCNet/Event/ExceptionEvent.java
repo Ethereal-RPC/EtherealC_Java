@@ -19,7 +19,7 @@ public class ExceptionEvent {
             listeners.remove(delegate);
         }
     }
-    public void OnEvent(Exception exception, Net net){
+    public void onEvent(Exception exception, Net net){
         synchronized (listeners){
             for (OnExceptionDelegate delegate:listeners) {
                 delegate.OnException(exception,net);

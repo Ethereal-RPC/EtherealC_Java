@@ -7,18 +7,36 @@ import NativeClient.SocketClient;
 import RPCNet.Net;
 import RPCNet.NetCore;
 import RPCRequest.Event.Delegate.OnExceptionDelegate;
+import RequestDemo.ServerRequest;
 
 public class RequestCore {
-
-    public static Request get(String netName,String serviceName)  {
+    //获取Request代理实体
+    public static Request getRequest(String netName,String serviceName)  {
         Net net = NetCore.get(netName);
         if (net == null)
             return null;
-        return get(net,serviceName);
+        return getRequest(net,serviceName);
     }
-    public static Request get(Net net,String serviceName)  {
+    //获取Request代理实体
+    public static Request getRequest(Net net,String serviceName)  {
         Object request = net.getRequests().get(serviceName);
+        return getRequest(request);
+    }
+    public static Request getRequest(Object request)  {
         return (Request) Proxy.getInvocationHandler(request);
+    }
+    //获取Request实体
+    public static <T> T get(String netName,String serviceName)  {
+        Net net = NetCore.get(netName);
+        if (net == null){
+            return null;
+        }
+        else return (T)net.getRequests().get(serviceName);
+    }
+    //获取Request实体
+    public static <T> T get(Net net,String serviceName)  {
+        Object request = net.getRequests().get(serviceName);
+        return (T)request;
     }
 
     public static <T> T register(Class<T> interface_class,Net net, String serviceName, RPCTypeConfig type) throws RPCException{
@@ -31,16 +49,16 @@ public class RequestCore {
         if(request == null){
             try{
                 request = Request.register(interface_class,net.getName(),serviceName,config);
-                ((Request)request).getExceptionEvent().register(net::OnRequestException);
-                ((Request)request).getLogEvent().register(net::OnRequestLog);
-                net.getRequests().put(serviceName, request);
+                ((Request)Proxy.getInvocationHandler(request)).getExceptionEvent().register(net::OnRequestException);
+                ((Request)Proxy.getInvocationHandler(request)).getLogEvent().register(net::OnRequestLog);
+                net.getRequests().put(serviceName, (ServerRequest) request);
             }
             catch (Exception err){
                 throw new RPCException(RPCException.ErrorCode.Core,serviceName + "异常报错，销毁注册\n" + err.getMessage());
             }
         }
         else throw new RPCException(RPCException.ErrorCode.Core,String.format("%s-%s已注册,无法重复注册！", net.getName(),serviceName));
-        return request;
+        return (T)request;
     }
 
     public static boolean unregister(String netName,String serviceName)  {
