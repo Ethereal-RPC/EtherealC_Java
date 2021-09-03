@@ -32,7 +32,7 @@ public class Net {
     private String name;
     private ExceptionEvent exceptionEvent = new ExceptionEvent();
     private LogEvent logEvent = new LogEvent();
-    private Semaphore connectSign = new Semaphore(1);
+    private Semaphore connectSign = new Semaphore(0);
     //Java没有自带三元组，这里就引用Kotlin了.
     private HashMap<String, Service> services = new HashMap<>();
     private HashMap<String, Object> requests = new HashMap<>();
@@ -226,13 +226,13 @@ public class Net {
                     }
                 }
                 if(client.getChannel().isActive()){
-                    Request netNodeRequest = RequestCore.get(net,"ServerNetNodeService");
-                    if(netNodeRequest != null)onException(RPCException.ErrorCode.Runtime,String.format("%s-%s 查找不到该请求", name,"ServerNetNodeService"));
+                    Request netNodeRequest = RequestCore.getRequest(net,"ServerNetNodeService");
+                    if(netNodeRequest == null)onException(RPCException.ErrorCode.Runtime,String.format("%s-%s 查找不到该请求", name,"ServerNetNodeService"));
                     for (Object _request : requests.values()) {
-                        Request request = (Request) _request;
+                        Request request = (Request) Proxy.getInvocationHandler(_request);
                         if(request.getClient() == null){
                             //获取服务节点
-                            NetNode node = ((ServerNetNodeRequest)netNodeRequest).GetNetNode("ServerNetNodeService");
+                            NetNode node = ((ServerNetNodeRequest)RequestCore.get(net,"ServerNetNodeService")).GetNetNode("ServerNetNodeService");
                             if(node != null){
                                 //注册连接并启动连接
                                 SocketClient requestClient = ClientCore.register(request,node.getIp(),node.getPort());

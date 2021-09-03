@@ -26,9 +26,9 @@ import java.util.ArrayList;
 public class Demo {
     public static void main(String[] args) throws Exception {
         //单节点
-        single("127.0.0.1","28015","1");
+        //single("127.0.0.1","28015","1");
         //分布式
-        //netNode("demo","127.0.0.1");
+        netNode("demo","127.0.0.1");
     }
     public static void single(String ip,String port,String netName) throws Exception {
         RPCTypeConfig types = new RPCTypeConfig();
@@ -82,7 +82,7 @@ public class Demo {
         Service service = ServiceCore.register(ClientService.class,net,"Client",types);
         //向网关注册请求
         ServerRequest serverRequest = RequestCore.register(ServerRequest.class,net,"Server",types);
-        ((Request)serverRequest).onConnectSuccess();
+        ((Request)Proxy.getInvocationHandler(serverRequest)).onConnectSuccess();
         //开启分布式
         net.getConfig().setNetNodeMode(true);
         ArrayList<Triplet<String ,String , ClientConfig>> ips = new ArrayList<>();
@@ -93,5 +93,10 @@ public class Demo {
         net.getConfig().setNetNodeIps(ips);
         //启动服务
         net.publish();
+        ((Request) Proxy.getInvocationHandler(serverRequest)).getConnectSuccessEvent().register(request -> {
+            ServerRequest _request = (ServerRequest)RequestCore.get(net,"Server");
+            Integer result = ((ServerRequest)_request).Add(3,4);
+            System.out.println("结果值是:" + result);
+        });
     }
 }

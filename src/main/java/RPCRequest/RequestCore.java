@@ -51,7 +51,7 @@ public class RequestCore {
                 request = Request.register(interface_class,net.getName(),serviceName,config);
                 ((Request)Proxy.getInvocationHandler(request)).getExceptionEvent().register(net::OnRequestException);
                 ((Request)Proxy.getInvocationHandler(request)).getLogEvent().register(net::OnRequestLog);
-                net.getRequests().put(serviceName, (ServerRequest) request);
+                net.getRequests().put(serviceName, request);
             }
             catch (Exception err){
                 throw new RPCException(RPCException.ErrorCode.Core,serviceName + "异常报错，销毁注册\n" + err.getMessage());

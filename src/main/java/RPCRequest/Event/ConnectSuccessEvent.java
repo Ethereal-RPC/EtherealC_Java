@@ -1,10 +1,12 @@
 package RPCRequest.Event;
 
 import Model.RPCLog;
+import NativeClient.Event.Delegate.OnExceptionDelegate;
 import RPCRequest.Event.Delegate.OnConnectSuccessDelegate;
 import RPCRequest.Event.Delegate.OnLogDelegate;
 import RPCRequest.Request;
 
+import java.util.Iterator;
 import java.util.Vector;
 
 public class ConnectSuccessEvent {
@@ -17,7 +19,10 @@ public class ConnectSuccessEvent {
     }
     public void unRegister(OnConnectSuccessDelegate delegate){
         synchronized (listeners){
-            listeners.remove(delegate);
+            Iterator<OnConnectSuccessDelegate> iterator = listeners.iterator();
+            while(iterator.hasNext() && iterator.next() == delegate){
+                iterator.remove();
+            }
         }
     }
     public void onEvent(Request request){

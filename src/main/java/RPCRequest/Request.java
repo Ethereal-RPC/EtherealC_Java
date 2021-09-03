@@ -145,9 +145,9 @@ public class Request implements InvocationHandler {
                     if(annotation.timeout() != -1)timeout = annotation.timeout();
                     if(client.send(request)){
                         ClientResponseModel respond = request.getResult(timeout);
-                        if(respond != null && respond.getResult() != null){
+                        if(respond != null){
                             if(respond.getError()!=null){
-                                onException(new RPCException(RPCException.ErrorCode.Runtime,respond.getError().getMessage()));
+                                onException(new RPCException(RPCException.ErrorCode.Runtime,"来自服务端的报错信息：\n" + respond.getError().getMessage()));
                             }
                             RPCType rpcType = config.getType().getTypesByName().get(respond.getResultType());
                             if(rpcType!=null){

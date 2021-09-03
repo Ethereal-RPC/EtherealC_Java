@@ -1,7 +1,11 @@
 package Model;
 
+import com.google.gson.annotations.Expose;
+
 public class User {
+    @Expose
     private long id;
+    @Expose
     private String username;
 
     public long getId() {

@@ -4,6 +4,7 @@ import RPCRequest.Request;
 import RPCService.Event.Delegate.OnExceptionDelegate;
 import RPCService.Service;
 
+import java.util.Iterator;
 import java.util.Vector;
 
 public class ExceptionEvent {
@@ -16,7 +17,10 @@ public class ExceptionEvent {
     }
     public void unRegister(OnExceptionDelegate delegate){
         synchronized (listeners){
-            listeners.remove(delegate);
+            Iterator<OnExceptionDelegate> iterator = listeners.iterator();
+            while(iterator.hasNext() && iterator.next() == delegate){
+                iterator.remove();
+            }
         }
     }
     public void onEvent(Exception exception, Service service) throws Exception {

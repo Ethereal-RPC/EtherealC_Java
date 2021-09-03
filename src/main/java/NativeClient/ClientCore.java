@@ -22,7 +22,7 @@ public class ClientCore {
     }
 
     public static SocketClient get(Net net,String serviceName)  {
-        Request request = (Request) net.getRequests().get(serviceName);
+        Request request = RequestCore.getRequest(net,serviceName);
         if(request != null){
             return  request.getClient();
         }
@@ -30,7 +30,7 @@ public class ClientCore {
     }
 
     public static SocketClient register(Net net,String serviceName,String host, String port) throws RPCException {
-        Request request = (Request) net.getRequests().get(serviceName);
+        Request request = RequestCore.getRequest(net,serviceName);
         if(request != null){
             return register(request,host,port,new ClientConfig());
         }
@@ -38,7 +38,7 @@ public class ClientCore {
     }
 
     public static SocketClient register(Net net,String serviceName,String host, String port, ClientConfig config) throws RPCException {
-        Request request = (Request) net.getRequests().get(serviceName);
+        Request request = RequestCore.getRequest(net,serviceName);
         if(request != null){
             return register(request,host,port,config);
         }
@@ -81,7 +81,7 @@ public class ClientCore {
     }
 
     public static boolean unregister(Net net,String serviceName)  {
-        Request request = RequestCore.get(net,serviceName);
+        Request request = RequestCore.getRequest(net,serviceName);
         if(request != null){
             SocketClient echoClient= request.getClient();
             if(echoClient != null){

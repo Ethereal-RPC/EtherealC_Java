@@ -1,10 +1,12 @@
 package RPCNet.Event;
 
 import Model.RPCLog;
+import NativeClient.Event.Delegate.OnExceptionDelegate;
 import NativeClient.SocketClient;
 import RPCNet.Event.Delegate.OnLogDelegate;
 import RPCNet.Net;
 
+import java.util.Iterator;
 import java.util.Vector;
 
 public class LogEvent {
@@ -17,7 +19,10 @@ public class LogEvent {
     }
     public void unRegister(OnLogDelegate delegate){
         synchronized (listeners){
-            listeners.remove(delegate);
+            Iterator<OnLogDelegate> iterator = listeners.iterator();
+            while(iterator.hasNext() && iterator.next() == delegate){
+                iterator.remove();
+            }
         }
     }
     public void onEvent(RPCLog log, Net net){

@@ -4,6 +4,7 @@ import NativeClient.Event.Delegate.OnConnectFailDelegate;
 import NativeClient.Event.Delegate.OnConnectSuccessDelegate;
 import NativeClient.SocketClient;
 
+import java.util.Iterator;
 import java.util.Vector;
 
 public class ConnectFailEvent {
@@ -16,7 +17,10 @@ public class ConnectFailEvent {
     }
     public void unRegister(OnConnectFailDelegate delegate){
         synchronized (listeners){
-            listeners.remove(delegate);
+            Iterator<OnConnectFailDelegate> iterator = listeners.iterator();
+            while(iterator.hasNext() && iterator.next() == delegate){
+                iterator.remove();
+            }
         }
     }
     public void onEvent(SocketClient client) throws Exception {

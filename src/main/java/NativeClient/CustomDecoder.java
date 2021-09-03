@@ -4,6 +4,7 @@ import java.util.List;
 
 import Model.ClientResponseModel;
 import Model.RPCException;
+import Model.RPCLog;
 import Model.ServerRequestModel;
 import RPCNet.Net;
 import RPCNet.NetCore;
@@ -61,13 +62,13 @@ public class CustomDecoder extends ByteToMessageDecoder {
                                     String.format("未找到net", netName));
                         }
                         if(pattern == 0){
-                            //Log.d(Tag.RemoteRepository,"[服-请求]:" + data);
+                            ClientCore.get(netName,serviceName).onLog(RPCLog.LogCode.Runtime,"[服-请求]:" + data);
                             //服务器模型的反序列化 实体
                             ServerRequestModel serverRequestModel = config.getServerRequestModelDeserialize().Deserialize(data);
                             net.getServerRequestReceive().ServerRequestReceive(serverRequestModel);
                         }
                         else {
-                            //Log.d(Tag.RemoteRepository,"[客-返回]:" + data);
+                            ClientCore.get(netName,serviceName).onLog(RPCLog.LogCode.Runtime,"[客-返回]:" + data);
                             ClientResponseModel clientResponseModel = config.getClientResponseModelDeserialize().Deserialize(data);
                             net.getClientResponseReceive().ClientResponseReceive(clientResponseModel);
                         }

@@ -139,7 +139,6 @@ public class SocketClient {
             doConnect();
         }
         catch (Exception e){
-            onConnectFailEvent();
             group.shutdownGracefully();
         }
     }
@@ -158,6 +157,7 @@ public class SocketClient {
             }
             else {
                 onException(RPCException.ErrorCode.Runtime,"Failed to connect to server, try connect after 10s");
+                onConnectFailEvent();
                 futureListener.channel().eventLoop().schedule(() -> doConnect(), 10, TimeUnit.SECONDS);
             }
         });

@@ -4,6 +4,7 @@ import RPCNet.Net;
 import RPCRequest.Event.Delegate.OnExceptionDelegate;
 import RPCRequest.Request;
 
+import java.util.Iterator;
 import java.util.Vector;
 
 public class ExceptionEvent {
@@ -16,7 +17,10 @@ public class ExceptionEvent {
     }
     public void unRegister(OnExceptionDelegate delegate){
         synchronized (listeners){
-            listeners.remove(delegate);
+            Iterator<OnExceptionDelegate> iterator = listeners.iterator();
+            while(iterator.hasNext() && iterator.next() == delegate){
+                iterator.remove();
+            }
         }
     }
     public void onEvent(Exception exception, Request request) throws Exception {

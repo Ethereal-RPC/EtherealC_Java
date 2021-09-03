@@ -1,25 +1,32 @@
 package RPCNet.NetNode.Model;
 
+import com.google.gson.annotations.Expose;
+
 public class NetNode {
     /// <summary>
     /// Net节点名
     /// </summary>
+    @Expose
     private String name;
     /// <summary>
     /// 连接数量
     /// </summary>
+    @Expose
     private long connects;
     /// <summary>
     /// ip地址
     /// </summary>
+    @Expose
     private String ip;
     /// <summary>
     /// port地址
     /// </summary>
+    @Expose
     private String port;
     /// <summary>
     /// 硬件信息
     /// </summary>
+    @Expose
     private HardwareInformation hardwareInformation;
 
     public String getName() {

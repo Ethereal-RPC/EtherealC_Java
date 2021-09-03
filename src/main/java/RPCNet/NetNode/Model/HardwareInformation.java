@@ -1,25 +1,32 @@
 package RPCNet.NetNode.Model;
 
+import com.google.gson.annotations.Expose;
+
 public class HardwareInformation {
     /// <summary>
     /// 系统名称
     /// </summary>
+    @Expose
     private String oSDescription;
     /// <summary>
     /// 系统架构
     /// </summary>
+    @Expose
     private String oSArchitecture;
     /// <summary>
     /// 进程架构
     /// </summary>
+    @Expose
     private String processArchitecture;
     /// <summary>
     /// 是否64位操作系统
     /// </summary>
+    @Expose
     private String is64BitOperatingSystem;
     /// <summary>
     /// 网络接口信息
     /// </summary>
+    @Expose
     private String networkInterfaces;
 
     public String getoSDescription() {
