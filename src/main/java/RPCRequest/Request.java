@@ -97,8 +97,6 @@ public class Request implements InvocationHandler {
         Annotation.RPCRequest annotation = method.getAnnotation(Annotation.RPCRequest.class);
         if(annotation != null){
             StringBuilder methodId = new StringBuilder(method.getName());
-            Type factType;
-            Class<?> cls;
             int param_count;
             if(args!=null)param_count = args.length;
             else param_count = 0;

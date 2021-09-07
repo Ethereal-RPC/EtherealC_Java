@@ -78,7 +78,7 @@ public class ClientRequestModel {
                     else this.wait(timeout);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                    return new ClientResponseModel();
+                    return null;
                 }
             }
             return Result;

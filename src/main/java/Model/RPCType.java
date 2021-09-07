@@ -9,6 +9,7 @@ public class RPCType {
     public interface ISerialize {
         String  Serialize(Object obj);
     }
+
     private IDeserialize deserialize;
     private ISerialize serialize;
     private Type type;

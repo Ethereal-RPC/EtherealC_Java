@@ -9,6 +9,7 @@ import RPCNet.Event.Delegate.OnLogDelegate;
 import RPCNet.Net;
 import RPCNet.NetCore;
 import RPCRequest.Request;
+import RPCRequest.RequestConfig;
 import RPCRequest.RequestCore;
 import RPCService.Service;
 import RPCService.ServiceCore;
@@ -33,7 +34,6 @@ public class Demo {
     public static void single(String ip,String port,String netName) throws Exception {
         RPCTypeConfig types = new RPCTypeConfig();
         types.add(Integer.class,"Int");
-        types.add(User.class,"User");
         types.add(Long.class,"Long");
         types.add(String.class,"String");
         types.add(Boolean.class,"Bool");
@@ -80,6 +80,7 @@ public class Demo {
         net.getLogEvent().register((log, net12) -> System.out.println(log.getMessage()));
         //向网关注册服务
         Service service = ServiceCore.register(ClientService.class,net,"Client",types);
+
         //向网关注册请求
         ServerRequest serverRequest = RequestCore.register(ServerRequest.class,net,"Server",types);
         ((Request)Proxy.getInvocationHandler(serverRequest)).onConnectSuccess();
