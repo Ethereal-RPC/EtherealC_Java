@@ -1,8 +1,8 @@
 package NativeClient.Event.Delegate;
 
 import Model.RPCLog;
-import NativeClient.SocketClient;
+import NativeClient.Client;
 
 public interface OnLogDelegate {
-    void OnLog(RPCLog log, SocketClient client);
+    void OnLog(RPCLog log, Client client);
 }

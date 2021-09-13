@@ -3,11 +3,9 @@ import java.lang.reflect.Proxy;
 
 import Model.RPCException;
 import Model.RPCTypeConfig;
-import NativeClient.SocketClient;
+import NativeClient.ClientCore;
 import RPCNet.Net;
 import RPCNet.NetCore;
-import RPCRequest.Event.Delegate.OnExceptionDelegate;
-import RequestDemo.ServerRequest;
 
 public class RequestCore {
     //获取Request代理实体
@@ -68,7 +66,12 @@ public class RequestCore {
         return unregister(net, serviceName);
     }
     public static boolean unregister(Net net,String serviceName)  {
-        net.getRequests().remove(serviceName);
+        Request request = getRequest(net,serviceName);
+        if(request != null){
+            ClientCore.unregister(request);
+            net.getRequests().remove(serviceName);
+
+        }
         return true;
     }
 

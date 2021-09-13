@@ -64,7 +64,7 @@ public class Service {
                             if(rpcType != null) {
                                 methodId.append("-").append(rpcType.getName());
                             }
-                            else onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("Java中的%s类型参数尚未注册,请注意是否是泛型导致！",parameter_type.getName())));
+                            else throw new RPCException(RPCException.ErrorCode.Runtime,String.format("Java中的%s类型参数尚未注册,请注意是否是泛型导致！",parameter_type.getName()));
                         }
                     }
                     else {
@@ -73,7 +73,7 @@ public class Service {
                             if(config.getTypes().getTypesByName().containsKey(type_name)){
                                 methodId.append("-").append(type_name);
                             }
-                            else onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("Java中的%s抽象类型参数尚未注册,请注意是否是泛型导致！",type_name)));
+                            else throw new RPCException(RPCException.ErrorCode.Runtime,String.format("Java中的%s抽象类型参数尚未注册,请注意是否是泛型导致！",type_name));
                         }
                     }
                     methods.put(methodId.toString(),method);
@@ -99,12 +99,11 @@ public class Service {
     public LogEvent getLogEvent() {
         return logEvent;
     }
-    public void onException(RPCException.ErrorCode code, String message) throws Exception {
+    public void onException(RPCException.ErrorCode code, String message) {
         onException(new RPCException(code,message));
     }
-    public void onException(Exception exception) throws Exception {
+    public void onException(Exception exception){
         exceptionEvent.onEvent(exception,this);
-        throw exception;
     }
 
     public void onLog(RPCLog.LogCode code, String message){

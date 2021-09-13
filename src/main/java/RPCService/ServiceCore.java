@@ -52,15 +52,14 @@ public class ServiceCore {
 
     public static boolean unregister(String netName,String serviceName) throws RPCException {
         Net net = NetCore.get(netName);
-        if(net == null)throw new RPCException(RPCException.ErrorCode.Runtime,String.format("{%s} Net未找到！",netName));
-        else return unregister(net,serviceName);
+        return unregister(net,serviceName);
     }
     public static boolean unregister(Net net,String serviceName) {
-        if(net.getServices().containsKey(serviceName)){
-            net.getServices().remove(serviceName);
-            return true;
+        if(net != null){
+            if(net.getServices().containsKey(serviceName)){
+                net.getServices().remove(serviceName);
+            }
         }
-        return false;
+        return true;
     }
-
 }

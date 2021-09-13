@@ -1,32 +1,31 @@
 package NativeClient.Event;
 
-import Model.RPCLog;
-import NativeClient.Event.Delegate.OnLogDelegate;
+import NativeClient.Event.Delegate.OnConnectDelegate;
 import NativeClient.Client;
 
 import java.util.Iterator;
 import java.util.Vector;
 
-public class LogEvent {
-    Vector<OnLogDelegate> listeners= new Vector<>();
+public class ConnectEvent {
+    Vector<OnConnectDelegate> listeners= new Vector<>();
 
-    public void register(OnLogDelegate delegate){
+    public void register(OnConnectDelegate delegate){
         synchronized (listeners){
             if(!listeners.contains(delegate)) listeners.add(delegate);
         }
     }
-    public void unRegister(OnLogDelegate delegate){
+    public void unRegister(OnConnectDelegate delegate){
         synchronized (listeners){
-            Iterator<OnLogDelegate> iterator = listeners.iterator();
+            Iterator<OnConnectDelegate> iterator = listeners.iterator();
             while(iterator.hasNext() && iterator.next() == delegate){
                 iterator.remove();
             }
         }
     }
-    public void onEvent(RPCLog log, Client client){
+    public void onEvent(Client client)  {
         synchronized (listeners){
-            for (OnLogDelegate delegate:listeners) {
-                delegate.OnLog(log,client);
+            for (OnConnectDelegate item : listeners){
+                item.OnConnectSuccess(client);
             }
         }
     }

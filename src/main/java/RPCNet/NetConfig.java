@@ -1,14 +1,10 @@
 package RPCNet;
 
-import Model.RPCException;
-import Model.RPCLog;
 import NativeClient.ClientConfig;
-import NativeClient.SocketClient;
-import RPCNet.Event.ExceptionEvent;
-import RPCNet.Event.LogEvent;
+import org.javatuples.Pair;
 import org.javatuples.Triplet;
+import org.javatuples.Tuple;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
@@ -31,7 +27,7 @@ public class NetConfig {
     /// <summary>
     /// 分布式IP组
     /// </summary>
-    private List<Triplet<String, String, ClientConfig>> netNodeIps;
+    private List<Pair<String, ClientConfig>> netNodeIps;
     /// <summary>
     /// 服务注册心跳间隔
     /// </summary>
@@ -45,11 +41,11 @@ public class NetConfig {
         this.netNodeMode = netNodeMode;
     }
 
-    public List<Triplet<String, String, ClientConfig>> getNetNodeIps() {
+    public List<Pair<String, ClientConfig>> getNetNodeIps() {
         return netNodeIps;
     }
 
-    public void setNetNodeIps(List<Triplet<String, String, ClientConfig>> netNodeIps) {
+    public void setNetNodeIps(List<Pair<String, ClientConfig>> netNodeIps) {
         this.netNodeIps = netNodeIps;
     }
 

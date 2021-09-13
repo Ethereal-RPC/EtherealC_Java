@@ -3,9 +3,9 @@ package RPCNet;
 import Model.*;
 import NativeClient.ClientConfig;
 import NativeClient.ClientCore;
-import NativeClient.Event.Delegate.OnConnectFailDelegate;
-import NativeClient.Event.Delegate.OnConnectSuccessDelegate;
-import NativeClient.SocketClient;
+import NativeClient.Event.Delegate.OnDisConnectDelegate;
+import NativeClient.Event.Delegate.OnConnectDelegate;
+import NativeClient.Client;
 import RPCNet.Event.ExceptionEvent;
 import RPCNet.Event.LogEvent;
 import RPCNet.Interface.IClientResponseReceive;
@@ -17,12 +17,13 @@ import RPCRequest.Request;
 import RPCRequest.RequestCore;
 import RPCService.Service;
 import RPCService.ServiceCore;
+import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.concurrent.Semaphore;
 
 public class Net {
@@ -104,18 +105,18 @@ public class Net {
                 {
                     RPCType rpcType = service.getTypes().getTypesByName().get(param_id[i]);
                     if(rpcType == null){
-                        service.onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("RPC中的%s类型参数尚未被注册！",param_id[i])));
+                        throw new RPCException(RPCException.ErrorCode.Runtime,String.format("RPC中的%s类型参数尚未被注册！",param_id[i]));
                     }
                     else request.getParams()[j] = rpcType.getDeserialize().Deserialize((String)request.getParams()[j]);
                 }
                 method.invoke(service,request.getParams());
             }
             else {
-                service.onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("%s-%s-%s Not Found",name,request.getService(),request.getMethodId())));
+                throw new RPCException(RPCException.ErrorCode.Runtime,String.format("%s-%s-%s Not Found",name,request.getService(),request.getMethodId()));
             }
         }
         else {
-            onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("%s-%s Not Found",name,request.getService())));
+            throw new RPCException(RPCException.ErrorCode.Runtime,String.format("%s-%s Not Found",name,request.getService()));
         }
     }
     private void ClientResponseProcess(ClientResponseModel response) throws RPCException {
@@ -158,17 +159,12 @@ public class Net {
                 while (true){
                     try {
                         NetNodeSearch();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    try {
                         Thread.sleep(config.getNetNodeHeartInterval());
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    } catch (Exception e) {
+                        onException(e);
                     }
                 }
             }).start();
-
         }
         else {
             for(Object _request : requests.values()){
@@ -179,7 +175,7 @@ public class Net {
         return true;
     }
 
-    private void NetNodeSearch() throws Exception {
+    private void NetNodeSearch() throws RPCException, InterruptedException {
         synchronized (connectSign){
             boolean flag = false;
             for(Object _request : requests.values()){
@@ -190,70 +186,76 @@ public class Net {
                 }
             }
             if(flag){
-                SocketClient client = null;
+                Client client = null;
                 Net net = NetCore.get(String.format("NetNode-%s", name));
-                if(net==null)onException(RPCException.ErrorCode.Runtime, String.format("NetNode-%s 未找到", name));
-                for (Triplet<String ,String , ClientConfig> item: config.getNetNodeIps()) {
-                    String ip = item.getValue0();
-                    String port = item.getValue1();
-                    ClientConfig config = item.getValue2();
-                    client = ClientCore.register(net,"ServerNetNodeService",ip,port,config);
-                    if(client == null)onException(RPCException.ErrorCode.Runtime, String.format("%s-%s 服务未找到", net.name,"ServerNetNodeService"));
+                if(net==null)throw new RPCException(RPCException.ErrorCode.Runtime, String.format("NetNode-%s 未找到", name));
+                for (Pair<String, ClientConfig> item: config.getNetNodeIps()) {
+                    String prefixes = item.getValue0();
+                    ClientConfig config = item.getValue1();
+                    client = ClientCore.register(net,"ServerNetNodeService",prefixes,config);
+                    if(client == null)throw new RPCException(RPCException.ErrorCode.Runtime, String.format("%s-%s 服务未找到", net.name,"ServerNetNodeService"));
                     net.config.setNetNodeMode(false);
-                    client.getConnectSuccessEvent().register(new OnConnectSuccessDelegate() {
+                    client.getConnectEvent().register(new OnConnectDelegate() {
                         @Override
-                        public void OnConnectSuccess(SocketClient client) {
+                        public void OnConnectSuccess(Client client) {
                             connectSign.release();
-                            client.getConnectSuccessEvent().unRegister(this);
+                            client.getConnectEvent().unRegister(this);
                         }
                     });
-                    client.getConnectFailEvent().register(new OnConnectFailDelegate() {
+                    client.getDisConnectEvent().register(new OnDisConnectDelegate() {
                         @Override
-                        public void OnConnectFail(SocketClient client) {
+                        public void OnDisConnect(Client client) {
                             connectSign.release();
-                            client.getConnectFailEvent().unRegister(this);
+                            client.getDisConnectEvent().unRegister(this);
                         }
                     });
                     //启动连接
                     client.start();
                     connectSign.acquire();
                     //连接成功
-                    if(client.getChannel().isActive()){
+                    if(client.isConnect()){
                         break;
                     }
                     else {
                         ClientCore.unregister(net,"ServerNetNodeService");
                     }
                 }
-                if(client.getChannel().isActive()){
+                if(client.isConnect()){
                     Request netNodeRequest = RequestCore.getRequest(net,"ServerNetNodeService");
-                    if(netNodeRequest == null)onException(RPCException.ErrorCode.Runtime,String.format("%s-%s 查找不到该请求", name,"ServerNetNodeService"));
+                    if(netNodeRequest == null)throw new RPCException(RPCException.ErrorCode.Runtime,String.format("%s-%s 查找不到该请求", name,"ServerNetNodeService"));
                     for (Object _request : requests.values()) {
                         Request request = (Request) Proxy.getInvocationHandler(_request);
                         if(request.getClient() == null){
+                            ServerNetNodeRequest serverNetNodeRequest = ((ServerNetNodeRequest)RequestCore.get(net,"ServerNetNodeService"));
                             //获取服务节点
-                            NetNode node = ((ServerNetNodeRequest)RequestCore.get(net,"ServerNetNodeService")).GetNetNode("ServerNetNodeService");
+                            NetNode node = serverNetNodeRequest.GetNetNode("ServerNetNodeService");
                             if(node != null){
                                 //注册连接并启动连接
-                                SocketClient requestClient = ClientCore.register(request,node.getIp(),node.getPort());
-                                requestClient.getConnectFailEvent().register(new OnConnectFailDelegate() {
+                                Client requestClient = ClientCore.register(request,node.getPrefixes()[0]);
+                                requestClient.getDisConnectEvent().register(new OnDisConnectDelegate() {
                                     @Override
-                                    public void OnConnectFail(SocketClient client) throws Exception {
-                                        client.getConnectFailEvent().unRegister(this);
-                                        ClientCore.unregister(client.getNetName(),client.getServiceName());
-                                        NetNodeSearch();
+                                    public void OnDisConnect(Client client){
+                                        try{
+                                            client.getDisConnectEvent().unRegister(this);
+                                            ClientCore.unregister(client.getNetName(),client.getServiceName());
+                                            NetNodeSearch();
+                                        }
+                                        catch (Exception e){
+                                            client.onException(e);
+                                        }
                                     }
                                 });
                                 requestClient.start();
                             }
-                            else onException(RPCException.ErrorCode.Runtime, String.format("%s-%s 在NetNode分布式节点中未找到节点", name,request.getName()));
+                            else {
+                                throw new RPCException(RPCException.ErrorCode.Runtime, String.format("%s-%s 在NetNode分布式节点中未找到节点", name,request.getName()));
+                            }
                         }
                     }
                 }
                 ClientCore.unregister(net,"ServerNetNodeService");
             }
         }
-
     }
 
     public ExceptionEvent getExceptionEvent() {
@@ -266,9 +268,8 @@ public class Net {
     public void onException(RPCException.ErrorCode code, String message) throws Exception {
         onException(new RPCException(code,message));
     }
-    public void onException(Exception exception) throws Exception {
+    public void onException(Exception exception)  {
         exceptionEvent.onEvent(exception,this);
-        throw exception;
     }
 
     public void onLog(RPCLog.LogCode code, String message){
@@ -278,7 +279,7 @@ public class Net {
         logEvent.onEvent(log,this);
     }
 
-    public void OnRequestException(Exception exception, Request request) throws Exception {
+    public void OnRequestException(Exception exception, Request request)  {
         onException(exception);
     }
 
@@ -287,7 +288,7 @@ public class Net {
         onLog(log);
     }
 
-    public void OnServiceException(Exception exception, Service service) throws Exception {
+    public void OnServiceException(Exception exception, Service service)  {
         onException(exception);
     }
 

@@ -2,6 +2,10 @@ package RPCNet.NetNode.Model;
 
 import com.google.gson.annotations.Expose;
 
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Hashtable;
+
 public class NetNode {
     /// <summary>
     /// Net节点名
@@ -17,17 +21,22 @@ public class NetNode {
     /// ip地址
     /// </summary>
     @Expose
-    private String ip;
-    /// <summary>
-    /// port地址
-    /// </summary>
-    @Expose
-    private String port;
+    private String[] prefixes;
     /// <summary>
     /// 硬件信息
     /// </summary>
     @Expose
     private HardwareInformation hardwareInformation;
+    /// <summary>
+    /// 服务信息
+    /// </summary>
+    @Expose
+    private HashMap<String, ServiceNode> services = new HashMap<>();
+    /// <summary>
+    /// 接口信息
+    /// </summary>
+    @Expose
+    private HashMap<String, RequestNode> requests = new HashMap<>();
 
     public String getName() {
         return name;
@@ -45,20 +54,28 @@ public class NetNode {
         this.connects = connects;
     }
 
-    public String getIp() {
-        return ip;
+    public String[] getPrefixes() {
+        return prefixes;
     }
 
-    public void setIp(String ip) {
-        this.ip = ip;
+    public void setPrefixes(String[] prefixes) {
+        this.prefixes = prefixes;
     }
 
-    public String getPort() {
-        return port;
+    public HashMap<String, ServiceNode> getServices() {
+        return services;
     }
 
-    public void setPort(String port) {
-        this.port = port;
+    public void setServices(HashMap<String, ServiceNode> services) {
+        this.services = services;
+    }
+
+    public HashMap<String, RequestNode> getRequests() {
+        return requests;
+    }
+
+    public void setRequests(HashMap<String, RequestNode> requests) {
+        this.requests = requests;
     }
 
     public HardwareInformation getHardwareInformation() {

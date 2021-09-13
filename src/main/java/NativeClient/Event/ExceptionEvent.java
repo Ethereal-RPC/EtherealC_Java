@@ -1,8 +1,7 @@
 package NativeClient.Event;
 
-import NativeClient.Event.Delegate.OnConnectSuccessDelegate;
 import NativeClient.Event.Delegate.OnExceptionDelegate;
-import NativeClient.SocketClient;
+import NativeClient.Client;
 
 import java.util.Iterator;
 import java.util.Vector;
@@ -23,7 +22,7 @@ public class ExceptionEvent {
             }
         }
     }
-    public void onEvent(Exception exception, SocketClient client) throws Exception {
+    public void onEvent(Exception exception, Client client)  {
         synchronized (listeners){
             for (OnExceptionDelegate delegate:listeners) {
                 delegate.OnException(exception,client);

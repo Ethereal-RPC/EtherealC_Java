@@ -1,6 +1,5 @@
 package RPCNet.Event;
 
-import NativeClient.SocketClient;
 import RPCNet.Event.Delegate.OnExceptionDelegate;
 import RPCNet.Net;
 

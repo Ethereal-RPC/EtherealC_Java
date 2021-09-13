@@ -10,8 +10,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 public class ClientConfig {
-
-    private int bufferSize = 1024;
+    private int threadCount = 5;
     private int maxBufferSize = 10240;
     private Charset charset = StandardCharsets.UTF_8;
     private int dynamicAdjustBufferCount = 1;
@@ -26,6 +25,14 @@ public class ClientConfig {
         clientRequestModelSerialize = obj -> Utils.gson.toJson(obj,ClientRequestModel.class);
         serverRequestModelDeserialize = obj -> Utils.gson.fromJson(obj,ServerRequestModel.class);
         clientResponseModelDeserialize = obj -> Utils.gson.fromJson(obj,ClientResponseModel.class);
+    }
+
+    public int getThreadCount() {
+        return threadCount;
+    }
+
+    public void setThreadCount(int threadCount) {
+        this.threadCount = threadCount;
     }
 
     public ClientRequestModelSerializeDelegate getClientRequestModelSerialize() {
@@ -76,14 +83,6 @@ public class ClientConfig {
         this.charset = charset;
     }
 
-
-    public int getBufferSize() {
-        return bufferSize;
-    }
-
-    public void setBufferSize(int bufferSize) {
-        this.bufferSize = bufferSize;
-    }
 
     public int getMaxBufferSize() {
         return maxBufferSize;

@@ -1,7 +1,7 @@
 package RPCRequest;
 
 import Model.*;
-import NativeClient.SocketClient;
+import NativeClient.Client;
 import RPCRequest.Event.ConnectSuccessEvent;
 import RPCRequest.Event.ExceptionEvent;
 import RPCRequest.Event.LogEvent;
@@ -9,7 +9,6 @@ import RPCRequest.Event.LogEvent;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.lang.reflect.Type;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -19,7 +18,7 @@ public class Request implements InvocationHandler {
     private String name;
     private String netName;
     private RequestConfig config;
-    private SocketClient client;//连接体
+    private Client client;//连接体
     //连接成功事件
     private ConnectSuccessEvent connectSuccessEvent = new ConnectSuccessEvent();
 
@@ -32,11 +31,11 @@ public class Request implements InvocationHandler {
         this.connectSuccessEvent = connectSuccessEvent;
     }
 
-    public SocketClient getClient() {
+    public Client getClient() {
         return client;
     }
 
-    public void setClient(SocketClient client) {
+    public void setClient(Client client) {
         this.client = client;
     }
 
@@ -109,7 +108,7 @@ public class Request implements InvocationHandler {
                         methodId.append("-").append(rpcType.getName());
                         array[j] = rpcType.getSerialize().Serialize(args[i]);
                     }
-                    else onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("Java中的%s类型参数尚未注册！",parameters[i].getName())));
+                    else throw new RPCException(RPCException.ErrorCode.Runtime,String.format("Java中的%s类型参数尚未注册！",parameters[i].getName()));
                 }
             }
             else {
@@ -121,10 +120,10 @@ public class Request implements InvocationHandler {
                             methodId.append("-").append(rpcType.getName());
                             array[j] = rpcType.getSerialize().Serialize(args[i]);
                         }
-                        else onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("方法体%s中的抽象类型为%s的类型尚未注册！",method.getName(),types_name[i])));
+                        else throw new RPCException(RPCException.ErrorCode.Runtime,String.format("方法体%s中的抽象类型为%s的类型尚未注册！",method.getName(),types_name[i]));
                     }
                 }
-                else onException(new RPCException(RPCException.ErrorCode.Runtime,String.format("方法体%s中RPCMethod注解与实际参数数量不符,@RPCRequest:%d个,Method:%d个",method.getName(),types_name.length,args.length)));
+                else throw new RPCException(RPCException.ErrorCode.Runtime,String.format("方法体%s中RPCMethod注解与实际参数数量不符,@RPCRequest:%d个,Method:%d个",method.getName(),types_name.length,args.length));
             }
             ClientRequestModel request = new ClientRequestModel("2.0", name, methodId.toString(),array);
             Class<?> return_type = method.getReturnType();
@@ -145,13 +144,13 @@ public class Request implements InvocationHandler {
                         ClientResponseModel respond = request.getResult(timeout);
                         if(respond != null){
                             if(respond.getError()!=null){
-                                onException(new RPCException(RPCException.ErrorCode.Runtime,"来自服务端的报错信息：\n" + respond.getError().getMessage()));
+                                throw new RPCException(RPCException.ErrorCode.Runtime,"来自服务端的报错信息：\n" + respond.getError().getMessage());
                             }
                             RPCType rpcType = config.getType().getTypesByName().get(respond.getResultType());
                             if(rpcType!=null){
                                 return rpcType.getDeserialize().Deserialize(respond.getResult());
                             }
-                            else onException(new RPCException(RPCException.ErrorCode.Runtime,respond.getResultType() + "抽象数据类型尚未注册"));
+                            else throw new RPCException(RPCException.ErrorCode.Runtime,respond.getResultType() + "抽象数据类型尚未注册");
                         }
                     }
                 }
@@ -163,11 +162,11 @@ public class Request implements InvocationHandler {
         }
         else return method.invoke(this,args);
     }
-    public void OnClientException(Exception exception, SocketClient client) throws Exception {
+    public void OnClientException(Exception exception, Client client)  {
         onException(exception);
     }
 
-    public void OnClientLog(RPCLog log, SocketClient client)
+    public void OnClientLog(RPCLog log, Client client)
     {
         onLog(log);
     }
@@ -175,9 +174,8 @@ public class Request implements InvocationHandler {
     public void onException(RPCException.ErrorCode code, String message) throws Exception {
         onException(new RPCException(code,message));
     }
-    public void onException(Exception exception) throws Exception {
+    public void onException(Exception exception)  {
         exceptionEvent.onEvent(exception,this);
-        throw exception;
     }
 
     public void onLog(RPCLog.LogCode code, String message){

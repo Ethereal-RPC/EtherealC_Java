@@ -1,42 +1,42 @@
 import Model.*;
 import NativeClient.ClientConfig;
 import NativeClient.ClientCore;
-import NativeClient.Event.Delegate.OnConnectFailDelegate;
-import NativeClient.Event.Delegate.OnConnectSuccessDelegate;
-import NativeClient.SocketClient;
-import RPCNet.Event.Delegate.OnExceptionDelegate;
-import RPCNet.Event.Delegate.OnLogDelegate;
+import NativeClient.Event.Delegate.OnDisConnectDelegate;
+import NativeClient.Event.Delegate.OnConnectDelegate;
+import NativeClient.Client;
 import RPCNet.Net;
 import RPCNet.NetCore;
 import RPCRequest.Request;
-import RPCRequest.RequestConfig;
 import RPCRequest.RequestCore;
 import RPCService.Service;
 import RPCService.ServiceCore;
 import RequestDemo.ServerRequest;
 import ServiceDemo.ClientService;
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader;
+import org.javatuples.Pair;
 import org.javatuples.Triplet;
-import org.javatuples.Tuple;
 
-import java.io.Console;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 
 public class Demo {
     public static void main(String[] args) throws Exception {
         //单节点
-        //single("127.0.0.1","28015","1");
+        //single("127.0.0.1:28015/NetDemo/","1");
         //分布式
-        netNode("demo","127.0.0.1");
+        ArrayList<String> arrayList = new ArrayList<>();
+        arrayList.add("127.0.0.1:28015/NetDemo/");
+        arrayList.add("127.0.0.1:28016/NetDemo/");
+        arrayList.add("127.0.0.1:28017/NetDemo/");
+        arrayList.add("127.0.0.1:28018/NetDemo/");
+        netNode("demo",arrayList);
     }
-    public static void single(String ip,String port,String netName) throws Exception {
+    public static void single(String prefixes,String netName) throws Exception {
         RPCTypeConfig types = new RPCTypeConfig();
         types.add(Integer.class,"Int");
         types.add(Long.class,"Long");
         types.add(String.class,"String");
         types.add(Boolean.class,"Bool");
+        types.add(User.class,"User");
         Net net = NetCore.register(netName);
         net.getExceptionEvent().register((exception, net1) -> System.out.println(exception.getMessage()));
         net.getLogEvent().register((log, net12) -> System.out.println(log.getMessage()));
@@ -50,16 +50,16 @@ public class Demo {
             System.out.println("结果值是:" + result);
         });
 
-        SocketClient socketClient = ClientCore.register((Request) Proxy.getInvocationHandler(serverRequest),ip,port);
-        socketClient.getConnectSuccessEvent().register(new OnConnectSuccessDelegate() {
+        Client socketClient = ClientCore.register((Request) Proxy.getInvocationHandler(serverRequest),prefixes);
+        socketClient.getConnectEvent().register(new OnConnectDelegate() {
             @Override
-            public void OnConnectSuccess(SocketClient client) {
+            public void OnConnectSuccess(Client client) {
                 System.out.println("Single启动成功");
             }
         });
-        socketClient.getConnectFailEvent().register(new OnConnectFailDelegate() {
+        socketClient.getDisConnectEvent().register(new OnDisConnectDelegate() {
             @Override
-            public void OnConnectFail(SocketClient client) throws Exception {
+            public void OnDisConnect(Client client) {
                 System.out.println("Single启动失败");
             }
         });
@@ -68,7 +68,7 @@ public class Demo {
         //启动服务
         net.publish();
     }
-    public static void netNode(String netName,String ip) throws Exception {
+    public static void netNode(String netName,ArrayList<String> prefixes) throws Exception {
         RPCTypeConfig types = new RPCTypeConfig();
         types.add(Integer.class,"Int");
         types.add(User.class,"User");
@@ -86,11 +86,10 @@ public class Demo {
         ((Request)Proxy.getInvocationHandler(serverRequest)).onConnectSuccess();
         //开启分布式
         net.getConfig().setNetNodeMode(true);
-        ArrayList<Triplet<String ,String , ClientConfig>> ips = new ArrayList<>();
-        ips.add(new Triplet<>(ip,"28015",new ClientConfig()));
-        ips.add(new Triplet<>(ip,"28016",new ClientConfig()));
-        ips.add(new Triplet<>(ip,"28017",new ClientConfig()));
-        ips.add(new Triplet<>(ip,"28018",new ClientConfig()));
+        ArrayList<Pair<String, ClientConfig>> ips = new ArrayList<>();
+        for (String item : prefixes){
+            ips.add(new Pair<>(item,new ClientConfig()));
+        }
         net.getConfig().setNetNodeIps(ips);
         //启动服务
         net.publish();

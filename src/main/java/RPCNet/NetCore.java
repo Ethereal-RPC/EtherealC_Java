@@ -37,21 +37,22 @@ public class NetCore {
 
     public static Boolean unregister(String name)  {
         Net net = get(name);
-        if(net != null){
-            return unregister(net);
-        }
-        else return true;
+        return unregister(net);
     }
     public static Boolean unregister(Net net)
     {
-        //清除请求上的连接
-        for(Object request : net.getRequests().values()){
-            ((Request)request).getClient().disconnect();
+        if(net != null){
+            if(nets.containsKey(net.getName())){
+                //清除请求上的连接
+                for(Object request : net.getRequests().values()){
+                    ((Request)request).getClient().disConnect();
+                }
+                net.getRequests().clear();
+                net.getServices().clear();
+                NetConfig config = null;
+                nets.remove(net.getName());
+            }
         }
-        net.getRequests().clear();
-        net.getServices().clear();
-        NetConfig config = null;
-        nets.remove(net.getName());
         return true;
     }
 

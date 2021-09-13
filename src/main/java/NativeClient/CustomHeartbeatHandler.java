@@ -1,19 +1,8 @@
 package NativeClient;
 
-import Model.ClientRequestModel;
-import Model.ClientResponseModel;
-import java.lang.reflect.Method;
-
 import Model.RPCLog;
-import Model.ServerRequestModel;
-import RPCNet.NetConfig;
-import RPCNet.NetCore;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandler;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleStateEvent;
 
 /**
@@ -23,10 +12,9 @@ import io.netty.handler.timeout.IdleStateEvent;
  * @created 16/9/18 13:02
  */
 public class CustomHeartbeatHandler extends ChannelInboundHandlerAdapter {
-    private int heartbeatCount = 0;
-    private SocketClient socketClient;
-    public CustomHeartbeatHandler(SocketClient socketClient){
-        this.socketClient = socketClient;
+    private Client client;
+    public CustomHeartbeatHandler(Client client){
+        this.client = client;
     }
 
     @Override
@@ -52,12 +40,12 @@ public class CustomHeartbeatHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        socketClient.onLog(RPCLog.LogCode.Runtime,"---" + ctx.channel().remoteAddress() + " is state---");
+        client.onLog(RPCLog.LogCode.Runtime,"---" + ctx.channel().remoteAddress() + " is state---");
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        socketClient.doConnect();
+        client.start();
     }
 
     protected void handleReaderIdle(ChannelHandlerContext ctx) {

@@ -23,7 +23,7 @@ public class ExceptionEvent {
             }
         }
     }
-    public void onEvent(Exception exception, Request request) throws Exception {
+    public void onEvent(Exception exception, Request request)  {
         synchronized (listeners){
             for (OnExceptionDelegate delegate:listeners) {
                 delegate.OnException(exception,request);

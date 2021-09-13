@@ -23,7 +23,7 @@ public class ExceptionEvent {
             }
         }
     }
-    public void onEvent(Exception exception, Service service) throws Exception {
+    public void onEvent(Exception exception, Service service) {
         synchronized (listeners){
             for (OnExceptionDelegate delegate:listeners) {
                 delegate.OnException(exception,service);
