@@ -1,6 +1,6 @@
 package Request.Abstract;
 
-import Core.Model.RPCTypeConfig;
+import Core.Model.AbstractTypeGroup;
 import Request.Interface.IRequestConfig;
 
 /**
@@ -16,18 +16,18 @@ import Request.Interface.IRequestConfig;
  * @Version: 1.0
  */
 public abstract class RequestConfig implements IRequestConfig {
-    private RPCTypeConfig type;
+    private AbstractTypeGroup type;
     private int timeout = -1;
 
-    public RequestConfig(RPCTypeConfig type){
+    public RequestConfig(AbstractTypeGroup type){
         this.type = type;
     }
 
-    public RPCTypeConfig getType() {
+    public AbstractTypeGroup getType() {
         return type;
     }
 
-    public void setType(RPCTypeConfig type) {
+    public void setType(AbstractTypeGroup type) {
         this.type = type;
     }
 

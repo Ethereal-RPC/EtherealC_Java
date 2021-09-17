@@ -1,6 +1,6 @@
 package Service.Abstract;
 
-import Core.Model.RPCTypeConfig;
+import Core.Model.AbstractTypeGroup;
 import Service.Interface.IServiceConfig;
 
 /**
@@ -16,17 +16,17 @@ import Service.Interface.IServiceConfig;
  * @Version: 1.0
  */
 public class ServiceConfig implements IServiceConfig {
-    private RPCTypeConfig types;
+    private AbstractTypeGroup types;
 
-    public RPCTypeConfig getTypes() {
+    public AbstractTypeGroup getTypes() {
         return types;
     }
 
-    public void setTypes(RPCTypeConfig types) {
+    public void setTypes(AbstractTypeGroup types) {
         this.types = types;
     }
 
-    public ServiceConfig(RPCTypeConfig type) {
+    public ServiceConfig(AbstractTypeGroup type) {
         this.types = type;
     }
 }

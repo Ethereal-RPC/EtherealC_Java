@@ -4,6 +4,7 @@ import Core.Enums.NetType;
 import Core.Event.ExceptionEvent;
 import Core.Event.LogEvent;
 import Core.Model.*;
+import Core.Model.TrackException;
 import Net.Delegate.IClientResponseReceive;
 import Net.Delegate.IServerRequestReceive;
 import Net.Interface.INet;
@@ -97,7 +98,7 @@ public abstract class Net implements INet {
         clientResponseReceive = this::clientResponseProcess;
     }
     @Override
-    public void serverRequestReceiveProcess(ServerRequestModel request) throws Exception {
+    public void serverRequestReceiveProcess(ServerRequestModel request) throws java.lang.Exception {
         Method method;
         Service service = services.get(request.getService());
         if(service != null){
@@ -107,24 +108,24 @@ public abstract class Net implements INet {
                 String[] param_id = request.getMethodId().split("-");
                 for (int i = 1,j=0; i < param_id.length; i++,j++)
                 {
-                    RPCType rpcType = service.getTypes().getTypesByName().get(param_id[i]);
+                    AbstractType rpcType = service.getTypes().getTypesByName().get(param_id[i]);
                     if(rpcType == null){
-                        throw new RPCException(RPCException.ErrorCode.Runtime,String.format("RPC中的%s类型参数尚未被注册！",param_id[i]));
+                        throw new TrackException(TrackException.ErrorCode.Runtime,String.format("RPC中的%s类型参数尚未被注册！",param_id[i]));
                     }
                     else request.getParams()[j] = rpcType.getDeserialize().Deserialize((String)request.getParams()[j]);
                 }
                 method.invoke(service,request.getParams());
             }
             else {
-                throw new RPCException(RPCException.ErrorCode.Runtime,String.format("%s-%s-%s Not Found",name,request.getService(),request.getMethodId()));
+                throw new TrackException(TrackException.ErrorCode.Runtime,String.format("%s-%s-%s Not Found",name,request.getService(),request.getMethodId()));
             }
         }
         else {
-            throw new RPCException(RPCException.ErrorCode.Runtime,String.format("%s-%s Not Found",name,request.getService()));
+            throw new TrackException(TrackException.ErrorCode.Runtime,String.format("%s-%s Not Found",name,request.getService()));
         }
     }
     @Override
-    public void clientResponseProcess(ClientResponseModel response) throws RPCException {
+    public void clientResponseProcess(ClientResponseModel response) throws TrackException {
         Integer id = Integer.parseInt(response.getId());
         Request request = (Request) Proxy.getInvocationHandler(requests.get(response.getService()));
         if(request != null){
@@ -132,9 +133,9 @@ public abstract class Net implements INet {
             if(requestModel != null){
                 requestModel.setResult(response);
             }
-            else throw new RPCException(RPCException.ErrorCode.Runtime,String.format("%s-%s-%s RequestId未找到",name,response.getService(),id));
+            else throw new TrackException(TrackException.ErrorCode.Runtime,String.format("%s-%s-%s RequestId未找到",name,response.getService(),id));
         }
-        else onLog(RPCLog.LogCode.Runtime,String.format("%s-%s Request未找到",name,response.getService()));
+        else onLog(TrackLog.LogCode.Runtime,String.format("%s-%s Request未找到",name,response.getService()));
     }
     public ExceptionEvent getExceptionEvent() {
         return exceptionEvent;
@@ -145,21 +146,21 @@ public abstract class Net implements INet {
     }
     @Override
 
-    public void onException(RPCException.ErrorCode code, String message){
-        onException(new RPCException(code,message));
+    public void onException(TrackException.ErrorCode code, String message){
+        onException(new TrackException(code,message));
     }
     @Override
-    public void onException(RPCException exception)  {
+    public void onException(TrackException exception)  {
         exception.setNet(this);
         exceptionEvent.onEvent(exception);
     }
     @Override
 
-    public void onLog(RPCLog.LogCode code, String message){
-        onLog(new RPCLog(code,message));
+    public void onLog(TrackLog.LogCode code, String message){
+        onLog(new TrackLog(code,message));
     }
     @Override
-    public void onLog(RPCLog log){
+    public void onLog(TrackLog log){
         log.setNet(this);
         logEvent.onEvent(log);
     }

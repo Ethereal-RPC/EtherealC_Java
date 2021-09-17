@@ -1,7 +1,7 @@
 package Core.Event;
 
 import Core.Event.Delegate.LogEventDelegte;
-import Core.Model.RPCLog;
+import Core.Model.TrackLog;
 
 import java.util.Iterator;
 import java.util.Vector;
@@ -22,7 +22,7 @@ public class LogEvent {
             }
         }
     }
-    public void onEvent(RPCLog log){
+    public void onEvent(TrackLog log){
         synchronized (listeners){
             for (LogEventDelegte delegate:listeners) {
                 delegate.onLog(log);

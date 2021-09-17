@@ -5,9 +5,9 @@ import Net.Abstract.Net;
 import Request.Abstract.Request;
 import Service.Abstract.Service;
 
-public class RPCException extends Exception{
+public class TrackException extends java.lang.Exception {
     public enum ErrorCode {Core, Runtime, NotEthereal}
-    private Exception exception;
+    private java.lang.Exception exception;
     private ErrorCode errorCode;
     private Client client;
     private Service service;
@@ -15,11 +15,11 @@ public class RPCException extends Exception{
     private Net net;
 
 
-    public Exception getException() {
+    public java.lang.Exception getException() {
         return exception;
     }
 
-    public void setException(Exception exception) {
+    public void setException(java.lang.Exception exception) {
         this.exception = exception;
     }
     public Client getClient() {
@@ -62,13 +62,13 @@ public class RPCException extends Exception{
         this.errorCode = errorCode;
     }
 
-    public RPCException(ErrorCode errorCode,String message)
+    public TrackException(ErrorCode errorCode, String message)
     {
         super(message);
         this.exception = this;
         this.errorCode = errorCode;
     }
-    public RPCException(Exception e)
+    public TrackException(java.lang.Exception e)
     {
         super("外部库错误");
         this.exception = e;

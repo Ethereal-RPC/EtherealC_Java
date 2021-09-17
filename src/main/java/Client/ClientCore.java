@@ -1,7 +1,7 @@
 package Client;
 
 import Core.Enums.NetType;
-import Core.Model.RPCException;
+import Core.Model.TrackException;
 import Client.Abstract.Client;
 import Client.Abstract.ClientConfig;
 import Client.WebSocket.WebSocketClient;
@@ -29,39 +29,39 @@ public class ClientCore {
         else return null;
     }
 
-    public static Client register(Net net, String serviceName, String prefixes) throws RPCException {
+    public static Client register(Net net, String serviceName, String prefixes) throws TrackException {
         Request request = RequestCore.getRequest(net,serviceName);
         if(request != null){
             if(net.getNetType() == NetType.WebSocket){
                 return register(request,prefixes,new WebSocketClientConfig());
             }
-            else throw new RPCException(RPCException.ErrorCode.Core, String.format("未有针对%s的Client-Register处理",net.getNetType()));
+            else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Client-Register处理",net.getNetType()));
         }
-        else throw new RPCException(RPCException.ErrorCode.Core, String.format("%s-%s 未找到！", net.getName(),serviceName));
+        else throw new TrackException(TrackException.ErrorCode.Core, String.format("%s-%s 未找到！", net.getName(),serviceName));
     }
 
-    public static Client register(Net net, String serviceName,String prefixes, ClientConfig config) throws RPCException {
+    public static Client register(Net net, String serviceName,String prefixes, ClientConfig config) throws TrackException {
         Request request = RequestCore.getRequest(net,serviceName);
         if(request != null){
             if(net.getNetType() == NetType.WebSocket){
                 return register(request,prefixes,config);
             }
-            else throw new RPCException(RPCException.ErrorCode.Core, String.format("未有针对%s的Client-Register处理",net.getNetType()));
+            else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Client-Register处理",net.getNetType()));
         }
-        else throw new RPCException(RPCException.ErrorCode.Core, String.format("%s-%s 未找到！", net.getName(),serviceName));
+        else throw new TrackException(TrackException.ErrorCode.Core, String.format("%s-%s 未找到！", net.getName(),serviceName));
     }
-    public static Client register(Request request, String prefixes) throws RPCException {
+    public static Client register(Request request, String prefixes) throws TrackException {
         Net net =  NetCore.get(request.getNetName());
         if(net != null){
             if(net.getNetType() == NetType.WebSocket){
                 return register(request,prefixes,new WebSocketClientConfig());
             }
-            else throw new RPCException(RPCException.ErrorCode.Core, String.format("未有针对%s的Client-Register处理",net.getNetType()));
+            else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Client-Register处理",net.getNetType()));
         }
-        else throw new RPCException(RPCException.ErrorCode.Core, String.format("%s 未找到！", net.getName()));
+        else throw new TrackException(TrackException.ErrorCode.Core, String.format("%s 未找到！", net.getName()));
     }
 
-    public static Client register(Request request, String prefixes, ClientConfig config) throws RPCException {
+    public static Client register(Request request, String prefixes, ClientConfig config) throws TrackException {
         Client socketClient = null;
         if(request != null){
             socketClient = request.getClient();
@@ -72,7 +72,7 @@ public class ClientCore {
                         socketClient = new WebSocketClient(request.getNetName(),request.getName(),prefixes,config);
                     }
                     else {
-                        throw new RPCException(RPCException.ErrorCode.Core, String.format("未有针对%s的Client-Register处理",net.getNetType()));
+                        throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Client-Register处理",net.getNetType()));
                     }
                 }
                 request.setClient(socketClient);
@@ -88,7 +88,7 @@ public class ClientCore {
             }
             return socketClient;
         }
-        else throw new RPCException(RPCException.ErrorCode.Core, String.format("%s-%s 未找到！",request.getNetName(),request.getName()));
+        else throw new TrackException(TrackException.ErrorCode.Core, String.format("%s-%s 未找到！",request.getNetName(),request.getName()));
     }
 
     public static boolean unregister(String netName,String serviceName)  {

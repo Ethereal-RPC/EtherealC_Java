@@ -2,9 +2,9 @@ package Service.Abstract;
 
 import Core.Event.ExceptionEvent;
 import Core.Event.LogEvent;
-import Core.Model.RPCException;
-import Core.Model.RPCLog;
-import Core.Model.RPCTypeConfig;
+import Core.Model.TrackException;
+import Core.Model.TrackLog;
+import Core.Model.AbstractTypeGroup;
 import Service.Interface.IService;
 
 import java.lang.reflect.Method;
@@ -12,7 +12,7 @@ import java.util.HashMap;
 
 public abstract class Service implements IService {
     protected HashMap<String,Method> methods = new HashMap<>();
-    protected RPCTypeConfig types;
+    protected AbstractTypeGroup types;
     protected Object instance = null;
     protected String netName;
     protected ServiceConfig config;
@@ -28,11 +28,11 @@ public abstract class Service implements IService {
         this.instance = instance;
     }
 
-    public RPCTypeConfig getTypes() {
+    public AbstractTypeGroup getTypes() {
         return types;
     }
 
-    public void setTypes(RPCTypeConfig types) {
+    public void setTypes(AbstractTypeGroup types) {
         this.types = types;
     }
 
@@ -61,22 +61,22 @@ public abstract class Service implements IService {
     }
     @Override
 
-    public void onException(RPCException.ErrorCode code, String message) {
-        onException(new RPCException(code,message));
+    public void onException(TrackException.ErrorCode code, String message) {
+        onException(new TrackException(code,message));
     }
     @Override
 
-    public void onException(RPCException exception){
+    public void onException(TrackException exception){
         exceptionEvent.onEvent(exception);
     }
     @Override
 
-    public void onLog(RPCLog.LogCode code, String message){
-        onLog(new RPCLog(code,message));
+    public void onLog(TrackLog.LogCode code, String message){
+        onLog(new TrackLog(code,message));
     }
     @Override
 
-    public void onLog(RPCLog log){
+    public void onLog(TrackLog log){
         logEvent.onEvent(log);
     }
 }

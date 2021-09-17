@@ -2,8 +2,8 @@ package Request.WebSocket;
 
 import Core.Model.ClientRequestModel;
 import Core.Model.ClientResponseModel;
-import Core.Model.RPCException;
-import Core.Model.RPCType;
+import Core.Model.TrackException;
+import Core.Model.AbstractType;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -21,7 +21,7 @@ public class WebSocketRequest extends Request.Abstract.Request {
     }
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Exception {
+    public Object invoke(Object proxy, Method method, Object[] args) throws java.lang.Exception {
         Request.Annotation.Request annotation = method.getAnnotation(Request.Annotation.Request.class);
         if(annotation != null){
             StringBuilder methodId = new StringBuilder(method.getName());
@@ -32,27 +32,27 @@ public class WebSocketRequest extends Request.Abstract.Request {
             if(annotation.parameters().length == 0){
                 Class<?>[] parameters = method.getParameterTypes();
                 for(int i=0,j=1;i<param_count;i++,j++){
-                    RPCType rpcType = config.getType().getTypesByType().get(parameters[i]);
+                    AbstractType rpcType = config.getType().getTypesByType().get(parameters[i]);
                     if(rpcType != null) {
                         methodId.append("-").append(rpcType.getName());
                         array[j] = rpcType.getSerialize().Serialize(args[i]);
                     }
-                    else throw new RPCException(RPCException.ErrorCode.Runtime,String.format("Java中的%s类型参数尚未注册！",parameters[i].getName()));
+                    else throw new TrackException(TrackException.ErrorCode.Runtime,String.format("Java中的%s类型参数尚未注册！",parameters[i].getName()));
                 }
             }
             else {
                 String[] types_name = annotation.parameters();
                 if(param_count == types_name.length){
                     for(int i=0,j=1;i<args.length;i++,j++){
-                        RPCType rpcType = config.getType().getTypesByName().get(types_name[i]);
+                        AbstractType rpcType = config.getType().getTypesByName().get(types_name[i]);
                         if(rpcType!=null){
                             methodId.append("-").append(rpcType.getName());
                             array[j] = rpcType.getSerialize().Serialize(args[i]);
                         }
-                        else throw new RPCException(RPCException.ErrorCode.Runtime,String.format("方法体%s中的抽象类型为%s的类型尚未注册！",method.getName(),types_name[i]));
+                        else throw new TrackException(TrackException.ErrorCode.Runtime,String.format("方法体%s中的抽象类型为%s的类型尚未注册！",method.getName(),types_name[i]));
                     }
                 }
-                else throw new RPCException(RPCException.ErrorCode.Runtime,String.format("方法体%s中RPCMethod注解与实际参数数量不符,@RPCRequest:%d个,Method:%d个",method.getName(),types_name.length,args.length));
+                else throw new TrackException(TrackException.ErrorCode.Runtime,String.format("方法体%s中RPCMethod注解与实际参数数量不符,@RPCRequest:%d个,Method:%d个",method.getName(),types_name.length,args.length));
             }
             ClientRequestModel request = new ClientRequestModel("2.0", name, methodId.toString(),array);
             Class<?> return_type = method.getReturnType();
@@ -73,13 +73,13 @@ public class WebSocketRequest extends Request.Abstract.Request {
                         ClientResponseModel respond = request.getResult(timeout);
                         if(respond != null){
                             if(respond.getError()!=null){
-                                throw new RPCException(RPCException.ErrorCode.Runtime,"来自服务端的报错信息：\n" + respond.getError().getMessage());
+                                throw new TrackException(TrackException.ErrorCode.Runtime,"来自服务端的报错信息：\n" + respond.getError().getMessage());
                             }
-                            RPCType rpcType = config.getType().getTypesByName().get(respond.getResultType());
+                            AbstractType rpcType = config.getType().getTypesByName().get(respond.getResultType());
                             if(rpcType!=null){
                                 return rpcType.getDeserialize().Deserialize(respond.getResult());
                             }
-                            else throw new RPCException(RPCException.ErrorCode.Runtime,respond.getResultType() + "抽象数据类型尚未注册");
+                            else throw new TrackException(TrackException.ErrorCode.Runtime,respond.getResultType() + "抽象数据类型尚未注册");
                         }
                     }
                 }

@@ -1,7 +1,7 @@
 package Core.Event;
 
 import Core.Event.Delegate.ExceptionEventDelegate;
-import Core.Model.RPCException;
+import Core.Model.TrackException;
 
 import java.util.Iterator;
 import java.util.Vector;
@@ -22,7 +22,7 @@ public class ExceptionEvent {
             }
         }
     }
-    public void onEvent(RPCException exception)  {
+    public void onEvent(TrackException exception)  {
         synchronized (listeners){
             for (ExceptionEventDelegate delegate:listeners) {
                 delegate.onException(exception);

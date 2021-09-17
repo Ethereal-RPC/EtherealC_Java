@@ -1,7 +1,7 @@
 package Core.Event.Delegate;
 
-import Core.Model.RPCLog;
+import Core.Model.TrackLog;
 
 public interface LogEventDelegte {
-    void onLog(RPCLog log);
+    void onLog(TrackLog log);
 }

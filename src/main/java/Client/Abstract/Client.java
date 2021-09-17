@@ -2,8 +2,8 @@ package Client.Abstract;
 
 import Core.Event.ExceptionEvent;
 import Core.Event.LogEvent;
-import Core.Model.RPCException;
-import Core.Model.RPCLog;
+import Core.Model.TrackException;
+import Core.Model.TrackLog;
 import Client.Event.ConnectEvent;
 import Client.Event.DisConnectEvent;
 import Client.Interface.IClient;
@@ -85,20 +85,20 @@ public abstract class Client implements IClient {
         this.config = config;
     }
     @Override
-    public void onException(RPCException.ErrorCode code, String message){
-        onException(new RPCException(code, message));
+    public void onException(TrackException.ErrorCode code, String message){
+        onException(new TrackException(code, message));
     }
     @Override
-    public void onException(RPCException exception)  {
+    public void onException(TrackException exception)  {
         exception.setClient(this);
         exceptionEvent.onEvent(exception);
     }
     @Override
-    public void onLog(RPCLog.LogCode code, String message) {
-        onLog(new RPCLog(code, message));
+    public void onLog(TrackLog.LogCode code, String message) {
+        onLog(new TrackLog(code, message));
     }
     @Override
-    public void onLog(RPCLog log) {
+    public void onLog(TrackLog log) {
         log.setClient(this);
         logEvent.onEvent(log);
     }

@@ -1,8 +1,8 @@
 package Service;
 
 import Core.Enums.NetType;
-import Core.Model.RPCException;
-import Core.Model.RPCTypeConfig;
+import Core.Model.TrackException;
+import Core.Model.AbstractTypeGroup;
 import Net.Abstract.Net;
 import Net.NetCore;
 import Service.Abstract.Service;
@@ -23,43 +23,43 @@ public class ServiceCore {
     }
 
 
-    public static Service register(Object instance,Net net, String serviceName, RPCTypeConfig type) throws RPCException {
+    public static Service register(Object instance,Net net, String serviceName, AbstractTypeGroup type) throws TrackException {
         if(net.getNetType() == NetType.WebSocket){
             return register(instance,net,serviceName,new ServiceConfig(type));
         }
-        else throw new RPCException(RPCException.ErrorCode.Core, String.format("未有针对%s的Service-Register处理",net.getNetType()));
+        else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Service-Register处理",net.getNetType()));
     }
-    public static Service register(Class instanceClass,Net net,String serviceName, RPCTypeConfig type) throws RPCException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public static Service register(Class instanceClass,Net net,String serviceName, AbstractTypeGroup type) throws TrackException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         if(net.getNetType() == NetType.WebSocket){
             return register(instanceClass.getDeclaredConstructor().newInstance(),net,serviceName,new ServiceConfig(type));
         }
-        else throw new RPCException(RPCException.ErrorCode.Core, String.format("未有针对%s的Service-Register处理",net.getNetType()));
+        else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Service-Register处理",net.getNetType()));
     }
-    public static Service register(Class instanceClass,Net net,String serviceName, ServiceConfig config) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, RPCException {
+    public static Service register(Class instanceClass,Net net,String serviceName, ServiceConfig config) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, TrackException {
         return register(instanceClass.getDeclaredConstructor().newInstance(),net,serviceName,config);
     }
-    public static Service register(Object instance,Net net,String serviceName, ServiceConfig config) throws RPCException {
+    public static Service register(Object instance,Net net,String serviceName, ServiceConfig config) throws TrackException {
         Service service = net.getServices().get(serviceName);
         if(service == null){
             try{
                 if(net.getNetType() == NetType.WebSocket){
                     service = new WebSocketService();
                 }
-                else throw new RPCException(RPCException.ErrorCode.Core, String.format("未有针对%s的Service-Register处理",net.getNetType()));
+                else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Service-Register处理",net.getNetType()));
                 service.register(instance,net.getName(),config);
                 net.getServices().put(serviceName,service);
                 service.getExceptionEvent().register(net::onException);
                 service.getLogEvent().register(net::onLog);
                 return service;
             }
-            catch (Exception err){
-                throw new RPCException(RPCException.ErrorCode.Core,serviceName + "异常报错，销毁注册\n" + err.getMessage());
+            catch (java.lang.Exception err){
+                throw new TrackException(TrackException.ErrorCode.Core,serviceName + "异常报错，销毁注册\n" + err.getMessage());
             }
         }
-        else throw new RPCException(RPCException.ErrorCode.Core,String.format("%s已注册,无法重复注册！",net.getName(),serviceName));
+        else throw new TrackException(TrackException.ErrorCode.Core,String.format("%s已注册,无法重复注册！",net.getName(),serviceName));
     }
 
-    public static boolean unregister(String netName,String serviceName) throws RPCException {
+    public static boolean unregister(String netName,String serviceName) throws TrackException {
         Net net = NetCore.get(netName);
         return unregister(net,serviceName);
     }

@@ -1,13 +1,13 @@
 package Service.WebSocket;
 
-import Core.Model.RPCException;
-import Core.Model.RPCType;
+import Core.Model.TrackException;
+import Core.Model.AbstractType;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 public class WebSocketService extends Service.Abstract.Service {
-    public void register(Object instance,String netName, Service.Abstract.ServiceConfig config) throws Exception {
+    public void register(Object instance,String netName, Service.Abstract.ServiceConfig config) throws java.lang.Exception {
         this.instance = instance;
         this.netName = netName;
         this.config = config;
@@ -22,11 +22,11 @@ public class WebSocketService extends Service.Abstract.Service {
                     methodId.append(method.getName());
                     if(annotation.parameters().length == 0){
                         for(Class<?> parameter_type : method.getParameterTypes()){
-                            RPCType rpcType = config.getTypes().getTypesByType().get(parameter_type);
+                            AbstractType rpcType = config.getTypes().getTypesByType().get(parameter_type);
                             if(rpcType != null) {
                                 methodId.append("-").append(rpcType.getName());
                             }
-                            else throw new RPCException(RPCException.ErrorCode.Runtime,String.format("Java中的%s类型参数尚未注册,请注意是否是泛型导致！",parameter_type.getName()));
+                            else throw new TrackException(TrackException.ErrorCode.Runtime,String.format("Java中的%s类型参数尚未注册,请注意是否是泛型导致！",parameter_type.getName()));
                         }
                     }
                     else {
@@ -35,7 +35,7 @@ public class WebSocketService extends Service.Abstract.Service {
                             if(config.getTypes().getTypesByName().containsKey(type_name)){
                                 methodId.append("-").append(type_name);
                             }
-                            else throw new RPCException(RPCException.ErrorCode.Runtime,String.format("Java中的%s抽象类型参数尚未注册,请注意是否是泛型导致！",type_name));
+                            else throw new TrackException(TrackException.ErrorCode.Runtime,String.format("Java中的%s抽象类型参数尚未注册,请注意是否是泛型导致！",type_name));
                         }
                     }
                     methods.put(methodId.toString(),method);

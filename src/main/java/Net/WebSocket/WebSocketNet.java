@@ -1,8 +1,8 @@
 package Net.WebSocket;
 
 import Core.Enums.NetType;
-import Core.Model.RPCException;
-import Core.Model.RPCTypeConfig;
+import Core.Model.TrackException;
+import Core.Model.AbstractTypeGroup;
 import Client.Abstract.Client;
 import Client.Abstract.ClientConfig;
 import Client.ClientCore;
@@ -19,7 +19,6 @@ import Service.Abstract.Service;
 import Service.ServiceCore;
 import org.javatuples.Pair;
 
-import java.io.Console;
 import java.lang.reflect.Proxy;
 import java.util.concurrent.Semaphore;
 
@@ -35,11 +34,11 @@ public class WebSocketNet extends Net {
         netType = NetType.WebSocket;
     }
     @Override
-    public boolean publish() throws Exception {
+    public boolean publish() throws java.lang.Exception {
         //分布式模式
         if(config.getNetNodeMode()){
             //注册数据类型
-            RPCTypeConfig types = new RPCTypeConfig();
+            AbstractTypeGroup types = new AbstractTypeGroup();
             types.add(Integer.class,"Int");
             types.add(Long.class,"Long");
             types.add(String.class,"String");
@@ -58,14 +57,14 @@ public class WebSocketNet extends Net {
                     try {
                         NetNodeSearch();
                     }
-                    catch (Exception e) {
-                        onException(new RPCException(e));
+                    catch (java.lang.Exception e) {
+                        onException(new TrackException(e));
                     }
                     finally {
                         try {
                             Thread.sleep(config.getNetNodeHeartInterval());
                         } catch (InterruptedException e) {
-                            onException(new RPCException(e));
+                            onException(new TrackException(e));
                         }
                     }
                 }
@@ -80,7 +79,7 @@ public class WebSocketNet extends Net {
         return true;
     }
 
-    private void NetNodeSearch() throws RPCException, InterruptedException {
+    private void NetNodeSearch() throws TrackException, InterruptedException {
         synchronized (connectSign){
             boolean flag = false;
             for(Object _request : requests.values()){
@@ -93,12 +92,12 @@ public class WebSocketNet extends Net {
             if(flag){
                 Client client = null;
                 Net net = NetCore.get(String.format("NetNode-%s", name));
-                if(net==null)throw new RPCException(RPCException.ErrorCode.Runtime, String.format("NetNode-%s 未找到", name));
+                if(net==null)throw new TrackException(TrackException.ErrorCode.Runtime, String.format("NetNode-%s 未找到", name));
                 for (Pair<String, ClientConfig> item: config.getNetNodeIps()) {
                     String prefixes = item.getValue0();
                     ClientConfig config = item.getValue1();
                     client = ClientCore.register(net,"ServerNetNodeService",prefixes,config);
-                    if(client == null)throw new RPCException(RPCException.ErrorCode.Runtime, String.format("%s-%s 服务未找到", net.getName(),"ServerNetNodeService"));
+                    if(client == null)throw new TrackException(TrackException.ErrorCode.Runtime, String.format("%s-%s 服务未找到", net.getName(),"ServerNetNodeService"));
                     net.getConfig().setNetNodeMode(false);
                     ((WebSocketClientConfig)(client.getConfig())).setSyncConnect(false);
                     //启动连接
@@ -113,7 +112,7 @@ public class WebSocketNet extends Net {
                 }
                 if(client.isConnect()){
                     Request netNodeRequest = RequestCore.getRequest(net,"ServerNetNodeService");
-                    if(netNodeRequest == null)throw new RPCException(RPCException.ErrorCode.Runtime,String.format("%s-%s 查找不到该请求", name,"ServerNetNodeService"));
+                    if(netNodeRequest == null)throw new TrackException(TrackException.ErrorCode.Runtime,String.format("%s-%s 查找不到该请求", name,"ServerNetNodeService"));
                     for (Object _request : requests.values()) {
                         Request request = (Request) Proxy.getInvocationHandler(_request);
                         if(request.getClient() == null){
@@ -131,15 +130,15 @@ public class WebSocketNet extends Net {
                                             client.getDisConnectEvent().unRegister(this);
                                             ClientCore.unregister(client.getNetName(),client.getServiceName());
                                         }
-                                        catch (Exception e){
-                                            client.onException(new RPCException(e));
+                                        catch (java.lang.Exception e){
+                                            client.onException(new TrackException(e));
                                         }
                                     }
                                 });
                                 requestClient.connect();
                             }
                             else {
-                                throw new RPCException(RPCException.ErrorCode.Runtime, String.format("%s-%s 在NetNode分布式节点中未找到节点", name,request.getName()));
+                                throw new TrackException(TrackException.ErrorCode.Runtime, String.format("%s-%s 在NetNode分布式节点中未找到节点", name,request.getName()));
                             }
                         }
                     }

@@ -2,7 +2,7 @@ package Core.Model;
 
 import java.lang.reflect.Type;
 
-public class RPCType {
+public class AbstractType {
     public interface IDeserialize {
         Object Deserialize(String obj);
     }

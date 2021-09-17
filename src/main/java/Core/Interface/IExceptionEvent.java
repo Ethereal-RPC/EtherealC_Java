@@ -1,8 +1,8 @@
 package Core.Interface;
 
-import Core.Model.RPCException;
+import Core.Model.TrackException;
 
 public interface IExceptionEvent {
-    void onException(RPCException exception);
-    void onException(RPCException.ErrorCode code, String message);
+    void onException(TrackException exception);
+    void onException(TrackException.ErrorCode code, String message);
 }

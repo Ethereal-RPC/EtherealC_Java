@@ -1,7 +1,7 @@
 package Core.Event.Delegate;
 
-import Core.Model.RPCException;
+import Core.Model.TrackException;
 
 public interface ExceptionEventDelegate {
-    void onException(RPCException exception);
+    void onException(TrackException exception);
 }

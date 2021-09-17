@@ -1,6 +1,6 @@
 package Request.WebSocket;
 
-import Core.Model.RPCTypeConfig;
+import Core.Model.AbstractTypeGroup;
 import Request.Abstract.RequestConfig;
 
 /**
@@ -16,19 +16,19 @@ import Request.Abstract.RequestConfig;
  * @Version: 1.0
  */
 public class WebSocketRequestConfig extends RequestConfig {
-    private RPCTypeConfig type;
+    private AbstractTypeGroup type;
     private int timeout = -1;
 
-    public WebSocketRequestConfig(RPCTypeConfig type){
+    public WebSocketRequestConfig(AbstractTypeGroup type){
         super(type);
         this.type = type;
     }
 
-    public RPCTypeConfig getType() {
+    public AbstractTypeGroup getType() {
         return type;
     }
 
-    public void setType(RPCTypeConfig type) {
+    public void setType(AbstractTypeGroup type) {
         this.type = type;
     }
 

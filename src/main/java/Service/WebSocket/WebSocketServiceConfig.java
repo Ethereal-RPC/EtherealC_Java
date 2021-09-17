@@ -1,6 +1,6 @@
 package Service.WebSocket;
 
-import Core.Model.RPCTypeConfig;
+import Core.Model.AbstractTypeGroup;
 import Service.Abstract.ServiceConfig;
 
 /**
@@ -17,7 +17,7 @@ import Service.Abstract.ServiceConfig;
  */
 public class WebSocketServiceConfig extends ServiceConfig {
 
-    public WebSocketServiceConfig(RPCTypeConfig type) {
+    public WebSocketServiceConfig(AbstractTypeGroup type) {
         super(type);
     }
 }

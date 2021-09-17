@@ -1,8 +1,8 @@
 package Core.Interface;
 
-import Core.Model.RPCLog;
+import Core.Model.TrackLog;
 
 public interface ILogEvent {
-    void onLog(RPCLog log);
-    void onLog(RPCLog.LogCode code, String message);
+    void onLog(TrackLog log);
+    void onLog(TrackLog.LogCode code, String message);
 }

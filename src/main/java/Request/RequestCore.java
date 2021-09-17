@@ -1,8 +1,8 @@
 package Request;
 
 import Core.Enums.NetType;
-import Core.Model.RPCException;
-import Core.Model.RPCTypeConfig;
+import Core.Model.TrackException;
+import Core.Model.AbstractTypeGroup;
 import Client.ClientCore;
 import Net.Abstract.Net;
 import Net.NetCore;
@@ -43,14 +43,14 @@ public class RequestCore {
         return (T)request;
     }
 
-    public static <T> T register(Class<T> interface_class,Net net, String serviceName, RPCTypeConfig type) throws RPCException{
+    public static <T> T register(Class<T> interface_class,Net net, String serviceName, AbstractTypeGroup type) throws TrackException {
         if(net.getNetType() == NetType.WebSocket){
             return register(interface_class,net,serviceName,new WebSocketRequestConfig(type));
         }
-        else throw new RPCException(RPCException.ErrorCode.Core, String.format("未有针对%s的Request-Register处理",net.getNetType()));
+        else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Request-Register处理",net.getNetType()));
     }
 
-    public static <T> T register(Class<T> interface_class,Net net,String serviceName, RequestConfig config) throws RPCException {
+    public static <T> T register(Class<T> interface_class,Net net,String serviceName, RequestConfig config) throws TrackException {
         T request = null;
         request = (T) net.getRequests().get(serviceName);
         if(request == null){
@@ -58,16 +58,16 @@ public class RequestCore {
                 if(net.getNetType() == NetType.WebSocket){
                     request = WebSocketRequest.register(interface_class,net.getName(),serviceName,config);
                 }
-                else throw new RPCException(RPCException.ErrorCode.Core, String.format("未有针对%s的Request-Register处理",net.getNetType()));
+                else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Request-Register处理",net.getNetType()));
                 ((Request)Proxy.getInvocationHandler(request)).getExceptionEvent().register(net::onException);
                 ((Request)Proxy.getInvocationHandler(request)).getLogEvent().register(net::onLog);
                 net.getRequests().put(serviceName, request);
             }
-            catch (Exception err){
-                throw new RPCException(RPCException.ErrorCode.Core,serviceName + "异常报错，销毁注册\n" + err.getMessage());
+            catch (java.lang.Exception err){
+                throw new TrackException(TrackException.ErrorCode.Core,serviceName + "异常报错，销毁注册\n" + err.getMessage());
             }
         }
-        else throw new RPCException(RPCException.ErrorCode.Core,String.format("%s-%s已注册,无法重复注册！", net.getName(),serviceName));
+        else throw new TrackException(TrackException.ErrorCode.Core,String.format("%s-%s已注册,无法重复注册！", net.getName(),serviceName));
         return (T)request;
     }
 

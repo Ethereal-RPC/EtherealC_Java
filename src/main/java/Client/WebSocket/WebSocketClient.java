@@ -1,7 +1,7 @@
 package Client.WebSocket;
 
 import Core.Model.ClientRequestModel;
-import Core.Model.RPCException;
+import Core.Model.TrackException;
 import Client.Abstract.Client;
 import Client.Abstract.ClientConfig;
 import io.netty.bootstrap.Bootstrap;
@@ -105,8 +105,8 @@ public class WebSocketClient extends Client {
                 webSocketHandler.getHandshakeFuture().sync();
             }
         }
-        catch (Exception e){
-            onException(new RPCException(e));
+        catch (java.lang.Exception e){
+            onException(new TrackException(e));
             group.shutdownGracefully();
             onDisConnectEvent();
         }
@@ -131,8 +131,8 @@ public class WebSocketClient extends Client {
                 this.channelFuture.channel().writeAndFlush(new CloseWebSocketFrame());
                 this.channelFuture.channel().closeFuture();
             }
-        } catch (Exception e) {
-            onException(new RPCException(e));
+        } catch (java.lang.Exception e) {
+            onException(new TrackException(e));
         }
         finally {
             if(!temp){

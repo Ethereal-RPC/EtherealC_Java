@@ -5,7 +5,7 @@ import Net.Abstract.Net;
 import Request.Abstract.Request;
 import Service.Abstract.Service;
 
-public class RPCLog {
+public class TrackLog {
     public enum LogCode { Core, Runtime }
     private String message;
     private LogCode code;
@@ -62,7 +62,7 @@ public class RPCLog {
         this.code = code;
     }
 
-    public RPCLog(LogCode code,String message) {
+    public TrackLog(LogCode code, String message) {
         this.message = message;
         this.code = code;
     }

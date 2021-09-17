@@ -1,6 +1,6 @@
 package Client.WebSocket;
 
-import Core.Model.RPCLog;
+import Core.Model.TrackLog;
 import Client.Abstract.Client;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -41,7 +41,7 @@ public class CustomHeartbeatHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        client.onLog(RPCLog.LogCode.Runtime,"---" + ctx.channel().remoteAddress() + " is state---");
+        client.onLog(TrackLog.LogCode.Runtime,"---" + ctx.channel().remoteAddress() + " is state---");
     }
 
     @Override

@@ -1,7 +1,7 @@
 package Net;
 
 import Core.Enums.NetType;
-import Core.Model.RPCException;
+import Core.Model.TrackException;
 import Net.Abstract.Net;
 import Net.Abstract.NetConfig;
 import Net.WebSocket.WebSocketNet;
@@ -21,20 +21,20 @@ public class NetCore {
     }
 
 
-    public static Net register(String name,NetType netType) throws RPCException {
+    public static Net register(String name,NetType netType) throws TrackException {
         if(netType == NetType.WebSocket){
             return register(name,new WebSocketNetConfig(),netType);
         }
-        else throw new RPCException(RPCException.ErrorCode.Core, String.format("未有针对%s的Net-Register处理",netType));
+        else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Net-Register处理",netType));
     }
-    public static Net register(String name, NetConfig config, NetType netType) throws RPCException {
+    public static Net register(String name, NetConfig config, NetType netType) throws TrackException {
         Net net = nets.get(name);
         if (net == null)
         {
             if(netType == NetType.WebSocket){
                 net = new WebSocketNet();
             }
-            else throw new RPCException(RPCException.ErrorCode.Core, String.format("未有针对%s的Net-Register处理",netType));
+            else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Net-Register处理",netType));
             net.setConfig(config);
             net.setName(name);
             nets.put(name, net);

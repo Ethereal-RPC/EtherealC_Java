@@ -1,8 +1,8 @@
 package Client.WebSocket;
 
 import Core.Model.ClientResponseModel;
-import Core.Model.RPCException;
-import Core.Model.RPCLog;
+import Core.Model.TrackException;
+import Core.Model.TrackLog;
 import Core.Model.ServerRequestModel;
 import Net.Abstract.Net;
 import Net.NetCore;
@@ -63,12 +63,12 @@ public class CustomWebSocketHandler extends SimpleChannelInboundHandler<Object> 
             if (!handshaker.isHandshakeComplete()) {
                 try {
                     handshaker.finishHandshake(ch, (FullHttpResponse) msg);
-                    client.onLog(RPCLog.LogCode.Runtime,"WebSocket Client connected!");
+                    client.onLog(TrackLog.LogCode.Runtime,"WebSocket Client connected!");
                     handshakeFuture.setSuccess();
                     this.client.onConnectSuccess();
                 } catch (WebSocketHandshakeException e) {
                     handshakeFuture.setFailure(e);
-                    throw new RPCException(RPCException.ErrorCode.Runtime,"WebSocket Client failed to connect");
+                    throw new TrackException(TrackException.ErrorCode.Runtime,"WebSocket Client failed to connect");
                 }
                 return;
             }
@@ -81,30 +81,30 @@ public class CustomWebSocketHandler extends SimpleChannelInboundHandler<Object> 
                 String data = ((TextWebSocketFrame) msg).content().toString(client.getConfig().getCharset());
                 Net net = NetCore.get(client.getNetName());
                 if(net == null){
-                    throw new RPCException(RPCException.ErrorCode.Runtime,
+                    throw new TrackException(TrackException.ErrorCode.Runtime,
                             String.format("未找到net", client.getNetName()));
                 }
                 JsonObject json_object = JsonParser.parseString(data).getAsJsonObject();
                 if(json_object.get("Type").toString().equals("ER-1.0-ServerRequest")){
-                    client.onLog(RPCLog.LogCode.Runtime,"[服-请求]:" + data);
+                    client.onLog(TrackLog.LogCode.Runtime,"[服-请求]:" + data);
                     //服务器模型的反序列化 实体
                     ServerRequestModel serverRequestModel = client.getConfig().getServerRequestModelDeserialize().Deserialize(data);
                     client.es.execute(()->{
                         try {
                             net.getServerRequestReceive().ServerRequestReceive(serverRequestModel);
-                        } catch (Exception e) {
-                            net.onException(new RPCException(e));
+                        } catch (java.lang.Exception e) {
+                            net.onException(new TrackException(e));
                         }
                     });
                 }
                 else {
-                    client.onLog(RPCLog.LogCode.Runtime,"[客-返回]:" + data);
+                    client.onLog(TrackLog.LogCode.Runtime,"[客-返回]:" + data);
                     ClientResponseModel clientResponseModel = client.getConfig().getClientResponseModelDeserialize().Deserialize(data);
                     client.es.execute(()->{
                         try {
                             net.getClientResponseReceive().ClientResponseReceive(clientResponseModel);
-                        } catch (Exception e) {
-                            net.onException(new RPCException(e));
+                        } catch (java.lang.Exception e) {
+                            net.onException(new TrackException(e));
                         }
                     });
                 }
@@ -114,8 +114,8 @@ public class CustomWebSocketHandler extends SimpleChannelInboundHandler<Object> 
                 client.disConnect();
             }
         }
-        catch (Exception e){
-            client.onException(new RPCException(e));
+        catch (java.lang.Exception e){
+            client.onException(new TrackException(e));
         }
     }
 
