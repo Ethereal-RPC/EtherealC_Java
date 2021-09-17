@@ -1,9 +1,9 @@
 package Core.Model;
 
-import NativeClient.Abstract.Client;
-import RPCNet.Abstract.Net;
-import RPCRequest.Abstract.Request;
-import RPCService.Abstract.Service;
+import Client.Abstract.Client;
+import Net.Abstract.Net;
+import Request.Abstract.Request;
+import Service.Abstract.Service;
 
 public class RPCLog {
     public enum LogCode { Core, Runtime }

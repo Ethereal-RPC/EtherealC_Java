@@ -1,13 +1,13 @@
 package RequestDemo;
 
-import Annotation.RPCRequest;
+import Request.Annotation.Request;
 
 
 public interface ServerRequest {
-    @RPCRequest
+    @Request
     public Boolean Register(String username, Long id);
-    @RPCRequest
+    @Request
     public Boolean SendSay(Long listener_id, String message);
-    @RPCRequest
+    @Request
     public Integer Add(Integer a, Integer b);
 }

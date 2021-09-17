@@ -1,10 +1,10 @@
 package ServiceDemo;
 
-import Annotation.RPCService;
+import Service.Annotation.Service;
 import Core.Model.User;
 
 public class ClientService {
-    @RPCService
+    @Service
     public void Say(User sender, String message)
     {
         System.out.println(sender.getUsername() + ":" + message);
