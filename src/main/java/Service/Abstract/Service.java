@@ -4,7 +4,7 @@ import Core.Event.ExceptionEvent;
 import Core.Event.LogEvent;
 import Core.Model.TrackException;
 import Core.Model.TrackLog;
-import Core.Model.AbstractTypeGroup;
+import Core.Model.AbstractTypes;
 import Service.Interface.IService;
 
 import java.lang.reflect.Method;
@@ -12,7 +12,7 @@ import java.util.HashMap;
 
 public abstract class Service implements IService {
     protected HashMap<String,Method> methods = new HashMap<>();
-    protected AbstractTypeGroup types;
+    protected AbstractTypes types;
     protected Object instance = null;
     protected String netName;
     protected ServiceConfig config;
@@ -28,11 +28,11 @@ public abstract class Service implements IService {
         this.instance = instance;
     }
 
-    public AbstractTypeGroup getTypes() {
+    public AbstractTypes getTypes() {
         return types;
     }
 
-    public void setTypes(AbstractTypeGroup types) {
+    public void setTypes(AbstractTypes types) {
         this.types = types;
     }
 

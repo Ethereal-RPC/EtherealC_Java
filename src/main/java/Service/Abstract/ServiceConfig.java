@@ -1,6 +1,6 @@
 package Service.Abstract;
 
-import Core.Model.AbstractTypeGroup;
+import Core.Model.AbstractTypes;
 import Service.Interface.IServiceConfig;
 
 /**
@@ -16,17 +16,17 @@ import Service.Interface.IServiceConfig;
  * @Version: 1.0
  */
 public class ServiceConfig implements IServiceConfig {
-    private AbstractTypeGroup types;
+    private AbstractTypes types;
 
-    public AbstractTypeGroup getTypes() {
+    public AbstractTypes getTypes() {
         return types;
     }
 
-    public void setTypes(AbstractTypeGroup types) {
+    public void setTypes(AbstractTypes types) {
         this.types = types;
     }
 
-    public ServiceConfig(AbstractTypeGroup type) {
+    public ServiceConfig(AbstractTypes type) {
         this.types = type;
     }
 }

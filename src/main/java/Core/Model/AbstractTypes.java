@@ -4,7 +4,7 @@ import Utils.Utils;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 
-public class AbstractTypeGroup {
+public class AbstractTypes {
     public interface IConvert {
         Object convert(Object obj);
     }
@@ -27,7 +27,7 @@ public class AbstractTypeGroup {
         this.typesByName = typesByName;
     }
 
-    public AbstractTypeGroup(){
+    public AbstractTypes(){
 
     }
     public void add(Type type, String abstractName) throws TrackException {

@@ -1,5 +1,5 @@
 import Core.Enums.NetType;
-import Core.Model.AbstractTypeGroup;
+import Core.Model.AbstractTypes;
 import Core.Model.User;
 import Client.Abstract.Client;
 import Client.Abstract.ClientConfig;
@@ -31,7 +31,7 @@ public class Demo {
         netNode("demo",arrayList);
     }
     public static void single(String prefixes,String netName) throws Exception {
-        AbstractTypeGroup types = new AbstractTypeGroup();
+        AbstractTypes types = new AbstractTypes();
         types.add(Integer.class,"Int");
         types.add(Long.class,"Long");
         types.add(String.class,"String");
@@ -59,7 +59,7 @@ public class Demo {
         net.publish();
     }
     public static void netNode(String netName,ArrayList<String> prefixes) throws Exception {
-        AbstractTypeGroup types = new AbstractTypeGroup();
+        AbstractTypes types = new AbstractTypes();
         types.add(Integer.class,"Int");
         types.add(User.class,"User");
         types.add(Long.class,"Long");

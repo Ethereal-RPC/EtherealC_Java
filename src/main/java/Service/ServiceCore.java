@@ -2,7 +2,7 @@ package Service;
 
 import Core.Enums.NetType;
 import Core.Model.TrackException;
-import Core.Model.AbstractTypeGroup;
+import Core.Model.AbstractTypes;
 import Net.Abstract.Net;
 import Net.NetCore;
 import Service.Abstract.Service;
@@ -23,13 +23,13 @@ public class ServiceCore {
     }
 
 
-    public static Service register(Object instance,Net net, String serviceName, AbstractTypeGroup type) throws TrackException {
+    public static Service register(Object instance,Net net, String serviceName, AbstractTypes type) throws TrackException {
         if(net.getNetType() == NetType.WebSocket){
             return register(instance,net,serviceName,new ServiceConfig(type));
         }
         else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Service-Register处理",net.getNetType()));
     }
-    public static Service register(Class instanceClass,Net net,String serviceName, AbstractTypeGroup type) throws TrackException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public static Service register(Class instanceClass,Net net,String serviceName, AbstractTypes type) throws TrackException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         if(net.getNetType() == NetType.WebSocket){
             return register(instanceClass.getDeclaredConstructor().newInstance(),net,serviceName,new ServiceConfig(type));
         }

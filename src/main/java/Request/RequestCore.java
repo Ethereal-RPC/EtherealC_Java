@@ -2,7 +2,7 @@ package Request;
 
 import Core.Enums.NetType;
 import Core.Model.TrackException;
-import Core.Model.AbstractTypeGroup;
+import Core.Model.AbstractTypes;
 import Client.ClientCore;
 import Net.Abstract.Net;
 import Net.NetCore;
@@ -43,7 +43,7 @@ public class RequestCore {
         return (T)request;
     }
 
-    public static <T> T register(Class<T> interface_class,Net net, String serviceName, AbstractTypeGroup type) throws TrackException {
+    public static <T> T register(Class<T> interface_class,Net net, String serviceName, AbstractTypes type) throws TrackException {
         if(net.getNetType() == NetType.WebSocket){
             return register(interface_class,net,serviceName,new WebSocketRequestConfig(type));
         }

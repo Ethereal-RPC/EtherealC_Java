@@ -2,7 +2,7 @@ package Net.WebSocket;
 
 import Core.Enums.NetType;
 import Core.Model.TrackException;
-import Core.Model.AbstractTypeGroup;
+import Core.Model.AbstractTypes;
 import Client.Abstract.Client;
 import Client.Abstract.ClientConfig;
 import Client.ClientCore;
@@ -38,7 +38,7 @@ public class WebSocketNet extends Net {
         //分布式模式
         if(config.getNetNodeMode()){
             //注册数据类型
-            AbstractTypeGroup types = new AbstractTypeGroup();
+            AbstractTypes types = new AbstractTypes();
             types.add(Integer.class,"Int");
             types.add(Long.class,"Long");
             types.add(String.class,"String");
