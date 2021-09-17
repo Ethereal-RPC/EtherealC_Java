@@ -1,7 +1,7 @@
 package ServiceDemo;
 
 import Annotation.RPCService;
-import Model.User;
+import Core.Model.User;
 
 public class ClientService {
     @RPCService

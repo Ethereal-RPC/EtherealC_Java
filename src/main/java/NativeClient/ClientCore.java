@@ -1,11 +1,15 @@
 package NativeClient;
 
-import Model.RPCException;
-import RPCNet.Net;
+import Core.Enums.NetType;
+import Core.Model.RPCException;
+import NativeClient.Abstract.Client;
+import NativeClient.Abstract.ClientConfig;
+import NativeClient.WebSocket.WebSocketClient;
+import NativeClient.WebSocket.WebSocketClientConfig;
+import RPCNet.Abstract.Net;
 import RPCNet.NetCore;
-import RPCRequest.Request;
+import RPCRequest.Abstract.Request;
 import RPCRequest.RequestCore;
-import org.javatuples.Pair;
 
 public class ClientCore {
 
@@ -28,7 +32,10 @@ public class ClientCore {
     public static Client register(Net net, String serviceName, String prefixes) throws RPCException {
         Request request = RequestCore.getRequest(net,serviceName);
         if(request != null){
-            return register(request,prefixes,new ClientConfig());
+            if(net.getNetType() == NetType.WebSocket){
+                return register(request,prefixes,new WebSocketClientConfig());
+            }
+            else throw new RPCException(RPCException.ErrorCode.Core, String.format("未有针对%s的Client-Register处理",net.getNetType()));
         }
         else throw new RPCException(RPCException.ErrorCode.Core, String.format("%s-%s 未找到！", net.getName(),serviceName));
     }
@@ -36,12 +43,22 @@ public class ClientCore {
     public static Client register(Net net, String serviceName,String prefixes, ClientConfig config) throws RPCException {
         Request request = RequestCore.getRequest(net,serviceName);
         if(request != null){
-            return register(request,prefixes,config);
+            if(net.getNetType() == NetType.WebSocket){
+                return register(request,prefixes,config);
+            }
+            else throw new RPCException(RPCException.ErrorCode.Core, String.format("未有针对%s的Client-Register处理",net.getNetType()));
         }
         else throw new RPCException(RPCException.ErrorCode.Core, String.format("%s-%s 未找到！", net.getName(),serviceName));
     }
     public static Client register(Request request, String prefixes) throws RPCException {
-        return register(request,prefixes,new ClientConfig());
+        Net net =  NetCore.get(request.getNetName());
+        if(net != null){
+            if(net.getNetType() == NetType.WebSocket){
+                return register(request,prefixes,new WebSocketClientConfig());
+            }
+            else throw new RPCException(RPCException.ErrorCode.Core, String.format("未有针对%s的Client-Register处理",net.getNetType()));
+        }
+        else throw new RPCException(RPCException.ErrorCode.Core, String.format("%s 未找到！", net.getName()));
     }
 
     public static Client register(Request request, String prefixes, ClientConfig config) throws RPCException {
@@ -49,10 +66,18 @@ public class ClientCore {
         if(request != null){
             socketClient = request.getClient();
             if(socketClient == null){
-                socketClient = new Client(request.getNetName(),request.getName(),prefixes,config);
+                Net net =  NetCore.get(request.getNetName());
+                if(net != null ){
+                    if(net.getNetType() == NetType.WebSocket){
+                        socketClient = new WebSocketClient(request.getNetName(),request.getName(),prefixes,config);
+                    }
+                    else {
+                        throw new RPCException(RPCException.ErrorCode.Core, String.format("未有针对%s的Client-Register处理",net.getNetType()));
+                    }
+                }
                 request.setClient(socketClient);
-                socketClient.getLogEvent().register(request::OnClientLog);//日志系统
-                socketClient.getExceptionEvent().register(request::OnClientException);//异常系统
+                socketClient.getLogEvent().register(request::onLog);//日志系统
+                socketClient.getExceptionEvent().register(request::onException);//异常系统
                 socketClient.getConnectEvent().register(client -> {
                     Request _request = RequestCore.getRequest(client.getNetName(), client.getServiceName());
                     if(_request!=null)

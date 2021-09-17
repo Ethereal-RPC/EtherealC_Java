@@ -1,7 +1,6 @@
 package NativeClient.Event.Delegate;
 
-import Model.RPCException;
-import NativeClient.Client;
+import NativeClient.Abstract.Client;
 
 public interface OnDisConnectDelegate {
     void OnDisConnect(Client client) ;

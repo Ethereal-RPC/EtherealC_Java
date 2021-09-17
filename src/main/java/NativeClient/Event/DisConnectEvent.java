@@ -1,7 +1,7 @@
 package NativeClient.Event;
 
+import NativeClient.Abstract.Client;
 import NativeClient.Event.Delegate.OnDisConnectDelegate;
-import NativeClient.Client;
 
 import java.util.Iterator;
 import java.util.Vector;

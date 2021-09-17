@@ -2,9 +2,7 @@ package RPCNet.NetNode.Model;
 
 import com.google.gson.annotations.Expose;
 
-import java.util.Dictionary;
 import java.util.HashMap;
-import java.util.Hashtable;
 
 public class NetNode {
     /// <summary>

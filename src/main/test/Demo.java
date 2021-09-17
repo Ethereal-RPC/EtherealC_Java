@@ -1,19 +1,19 @@
-import Model.*;
-import NativeClient.ClientConfig;
+import Core.Enums.NetType;
+import Core.Model.RPCTypeConfig;
+import Core.Model.User;
+import NativeClient.Abstract.Client;
+import NativeClient.Abstract.ClientConfig;
 import NativeClient.ClientCore;
-import NativeClient.Event.Delegate.OnDisConnectDelegate;
-import NativeClient.Event.Delegate.OnConnectDelegate;
-import NativeClient.Client;
-import RPCNet.Net;
+import NativeClient.WebSocket.WebSocketClientConfig;
+import RPCNet.Abstract.Net;
 import RPCNet.NetCore;
-import RPCRequest.Request;
+import RPCRequest.Abstract.Request;
 import RPCRequest.RequestCore;
-import RPCService.Service;
+import RPCService.Abstract.Service;
 import RPCService.ServiceCore;
 import RequestDemo.ServerRequest;
 import ServiceDemo.ClientService;
 import org.javatuples.Pair;
-import org.javatuples.Triplet;
 
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
@@ -37,9 +37,9 @@ public class Demo {
         types.add(String.class,"String");
         types.add(Boolean.class,"Bool");
         types.add(User.class,"User");
-        Net net = NetCore.register(netName);
-        net.getExceptionEvent().register((exception, net1) -> System.out.println(exception.getMessage()));
-        net.getLogEvent().register((log, net12) -> System.out.println(log.getMessage()));
+        Net net = NetCore.register(netName, NetType.WebSocket);
+        net.getExceptionEvent().register(exception -> System.out.println(exception.getMessage()));
+        net.getLogEvent().register(log -> System.out.println(log.getMessage()));
         //向网关注册服务
         Service service = ServiceCore.register(ClientService.class,net,"Client",types);
         //向网关注册请求
@@ -51,18 +51,8 @@ public class Demo {
         });
 
         Client socketClient = ClientCore.register((Request) Proxy.getInvocationHandler(serverRequest),prefixes);
-        socketClient.getConnectEvent().register(new OnConnectDelegate() {
-            @Override
-            public void OnConnectSuccess(Client client) {
-                System.out.println("Single启动成功");
-            }
-        });
-        socketClient.getDisConnectEvent().register(new OnDisConnectDelegate() {
-            @Override
-            public void OnDisConnect(Client client) {
-                System.out.println("Single启动失败");
-            }
-        });
+        socketClient.getConnectEvent().register(client -> System.out.println("Single启动成功"));
+        socketClient.getDisConnectEvent().register(client -> System.out.println("Single启动失败"));
         //关闭分布式
         net.getConfig().setNetNodeMode(false);
         //启动服务
@@ -75,12 +65,11 @@ public class Demo {
         types.add(Long.class,"Long");
         types.add(String.class,"String");
         types.add(Boolean.class,"Bool");
-        Net net = NetCore.register(netName);
-        net.getExceptionEvent().register((exception, net1) -> System.out.println(exception.getMessage()));
-        net.getLogEvent().register((log, net12) -> System.out.println(log.getMessage()));
+        Net net = NetCore.register(netName,NetType.WebSocket);
+        net.getExceptionEvent().register((exception -> System.out.println(exception.getException().getMessage())));
+        net.getLogEvent().register(log -> System.out.println(log.getMessage()));
         //向网关注册服务
         Service service = ServiceCore.register(ClientService.class,net,"Client",types);
-
         //向网关注册请求
         ServerRequest serverRequest = RequestCore.register(ServerRequest.class,net,"Server",types);
         ((Request)Proxy.getInvocationHandler(serverRequest)).onConnectSuccess();
@@ -88,7 +77,7 @@ public class Demo {
         net.getConfig().setNetNodeMode(true);
         ArrayList<Pair<String, ClientConfig>> ips = new ArrayList<>();
         for (String item : prefixes){
-            ips.add(new Pair<>(item,new ClientConfig()));
+            ips.add(new Pair<>(item,new WebSocketClientConfig()));
         }
         net.getConfig().setNetNodeIps(ips);
         //启动服务

@@ -1,10 +1,7 @@
 package RPCRequest.Event;
 
-import Model.RPCLog;
-import NativeClient.Event.Delegate.OnExceptionDelegate;
+import RPCRequest.Abstract.Request;
 import RPCRequest.Event.Delegate.OnConnectSuccessDelegate;
-import RPCRequest.Event.Delegate.OnLogDelegate;
-import RPCRequest.Request;
 
 import java.util.Iterator;
 import java.util.Vector;

@@ -1,19 +1,18 @@
 package RPCService;
 
-import Model.RPCException;
+import Core.Enums.NetType;
+import Core.Model.RPCException;
+import Core.Model.RPCTypeConfig;
+import RPCNet.Abstract.Net;
+import RPCNet.NetCore;
+import RPCService.Abstract.Service;
+import RPCService.WebSocket.WebSocketService;
 
 import java.lang.reflect.InvocationTargetException;
 
-import Model.RPCLog;
-import Model.RPCTypeConfig;
-import RPCNet.Net;
-import RPCNet.NetCore;
-import RPCService.Event.ExceptionEvent;
-import RPCService.Event.LogEvent;
-
 public class ServiceCore {
 
-    public static Service get(String netName,String serviceName)  {
+    public static Service get(String netName, String serviceName)  {
         Net net = NetCore.get(netName);
         if(net == null)return null;
         return get(net,serviceName);
@@ -24,10 +23,16 @@ public class ServiceCore {
 
 
     public static Service register(Object instance,Net net, String serviceName, RPCTypeConfig type) throws RPCException {
-        return register(instance,net,serviceName,new ServiceConfig(type));
+        if(net.getNetType() == NetType.WebSocket){
+            return register(instance,net,serviceName,new ServiceConfig(type));
+        }
+        else throw new RPCException(RPCException.ErrorCode.Core, String.format("未有针对%s的Service-Register处理",net.getNetType()));
     }
     public static Service register(Class instanceClass,Net net,String serviceName, RPCTypeConfig type) throws RPCException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        return register(instanceClass.getDeclaredConstructor().newInstance(),net,serviceName,new ServiceConfig(type));
+        if(net.getNetType() == NetType.WebSocket){
+            return register(instanceClass.getDeclaredConstructor().newInstance(),net,serviceName,new ServiceConfig(type));
+        }
+        else throw new RPCException(RPCException.ErrorCode.Core, String.format("未有针对%s的Service-Register处理",net.getNetType()));
     }
     public static Service register(Class instanceClass,Net net,String serviceName, ServiceConfig config) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, RPCException {
         return register(instanceClass.getDeclaredConstructor().newInstance(),net,serviceName,config);
@@ -36,11 +41,14 @@ public class ServiceCore {
         Service service = net.getServices().get(serviceName);
         if(service == null){
             try{
-                service = new Service();
+                if(net.getNetType() == NetType.WebSocket){
+                    service = new WebSocketService();
+                }
+                else throw new RPCException(RPCException.ErrorCode.Core, String.format("未有针对%s的Service-Register处理",net.getNetType()));
                 service.register(instance,net.getName(),config);
                 net.getServices().put(serviceName,service);
-                service.getExceptionEvent().register(net::OnServiceException);
-                service.getLogEvent().register(net::OnServiceLog);
+                service.getExceptionEvent().register(net::onException);
+                service.getLogEvent().register(net::onLog);
                 return service;
             }
             catch (Exception err){

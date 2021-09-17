@@ -1,10 +1,12 @@
 package RPCNet;
 
-import Model.*;
-import RPCNet.Event.ExceptionEvent;
-import RPCNet.Event.LogEvent;
-import RPCRequest.Request;
-import RPCRequest.RequestCore;
+import Core.Enums.NetType;
+import Core.Model.RPCException;
+import RPCNet.Abstract.Net;
+import RPCNet.Abstract.NetConfig;
+import RPCNet.WebSocket.WebSocketNet;
+import RPCNet.WebSocket.WebSocketNetConfig;
+import RPCRequest.Abstract.Request;
 
 import java.util.HashMap;
 
@@ -19,14 +21,20 @@ public class NetCore {
     }
 
 
-    public static Net register(String name) throws RPCException {
-        return register(name, new NetConfig());
+    public static Net register(String name,NetType netType) throws RPCException {
+        if(netType == NetType.WebSocket){
+            return register(name,new WebSocketNetConfig(),netType);
+        }
+        else throw new RPCException(RPCException.ErrorCode.Core, String.format("未有针对%s的Net-Register处理",netType));
     }
-    public static Net register(String name, NetConfig config) throws RPCException {
+    public static Net register(String name, NetConfig config, NetType netType) throws RPCException {
         Net net = nets.get(name);
         if (net == null)
         {
-            net = new Net();
+            if(netType == NetType.WebSocket){
+                net = new WebSocketNet();
+            }
+            else throw new RPCException(RPCException.ErrorCode.Core, String.format("未有针对%s的Net-Register处理",netType));
             net.setConfig(config);
             net.setName(name);
             nets.put(name, net);

@@ -1,6 +1,6 @@
 package RPCRequest.Event.Delegate;
 
-import RPCRequest.Request;
+import RPCRequest.Abstract.Request;
 
 public interface OnConnectSuccessDelegate {
     void OnConnectSuccess(Request request);
