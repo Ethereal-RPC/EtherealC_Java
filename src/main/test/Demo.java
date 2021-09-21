@@ -1,5 +1,7 @@
 import Core.Enums.NetType;
+import Core.Event.Delegate.LogEventDelegte;
 import Core.Model.AbstractTypes;
+import Core.Model.TrackLog;
 import Core.Model.User;
 import Client.Abstract.Client;
 import Client.Abstract.ClientConfig;

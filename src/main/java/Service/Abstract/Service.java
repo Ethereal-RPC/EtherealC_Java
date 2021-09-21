@@ -67,6 +67,7 @@ public abstract class Service implements IService {
     @Override
 
     public void onException(TrackException exception){
+        exception.setService(this);
         exceptionEvent.onEvent(exception);
     }
     @Override
@@ -77,6 +78,7 @@ public abstract class Service implements IService {
     @Override
 
     public void onLog(TrackLog log){
+        log.setService(this);
         logEvent.onEvent(log);
     }
 }
