@@ -119,6 +119,7 @@ public abstract class Request implements IRequest {
     }
     @Override
     public void onException(TrackException exception)  {
+        exception.setRequest(this);
         exceptionEvent.onEvent(exception);
     }
     @Override
@@ -128,6 +129,7 @@ public abstract class Request implements IRequest {
     }
     @Override
     public void onLog(TrackLog log){
+        log.setRequest(this);
         logEvent.onEvent(log);
     }
 
