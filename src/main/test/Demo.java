@@ -1,16 +1,18 @@
-import Core.Enums.NetType;
-import Core.Model.AbstractTypes;
-import Core.Model.User;
-import Client.Abstract.Client;
-import Client.Abstract.ClientConfig;
-import Client.ClientCore;
-import Client.WebSocket.WebSocketClientConfig;
-import Net.Abstract.Net;
-import Net.NetCore;
-import Request.Abstract.Request;
-import Request.RequestCore;
-import Service.Abstract.Service;
-import Service.ServiceCore;
+import Model.User;
+import com.ethereal.client.Core.Enums.NetType;
+import com.ethereal.client.Core.Event.Delegate.ExceptionEventDelegate;
+import com.ethereal.client.Core.Model.AbstractTypes;
+import com.ethereal.client.Client.Abstract.Client;
+import com.ethereal.client.Client.Abstract.ClientConfig;
+import com.ethereal.client.Client.ClientCore;
+import com.ethereal.client.Client.WebSocket.WebSocketClientConfig;
+import com.ethereal.client.Core.Model.TrackException;
+import com.ethereal.client.Net.Abstract.Net;
+import com.ethereal.client.Net.NetCore;
+import com.ethereal.client.Request.Abstract.Request;
+import com.ethereal.client.Request.RequestCore;
+import com.ethereal.client.Service.Abstract.Service;
+import com.ethereal.client.Service.ServiceCore;
 import RequestDemo.ServerRequest;
 import ServiceDemo.ClientService;
 import org.javatuples.Pair;
@@ -44,13 +46,13 @@ public class Demo {
         Service service = ServiceCore.register(ClientService.class,net,"Client",types);
         //向网关注册请求
         ServerRequest serverRequest = RequestCore.register(ServerRequest.class,net,"Server",types);
-        ((Request) Proxy.getInvocationHandler(serverRequest)).getConnectSuccessEvent().register(request -> {
+        serverRequest.getConnectSuccessEvent().register(request -> {
             ServerRequest _request = (ServerRequest)RequestCore.get(net,"Server");
             Integer result = ((ServerRequest)_request).Add(3,4);
             System.out.println("结果值是:" + result);
         });
 
-        Client socketClient = ClientCore.register((Request) Proxy.getInvocationHandler(serverRequest),prefixes);
+        Client socketClient = ClientCore.register(serverRequest,prefixes);
         socketClient.getConnectEvent().register(client -> System.out.println("Single启动成功"));
         socketClient.getDisConnectEvent().register(client -> System.out.println("Single启动失败"));
         //关闭分布式
@@ -66,13 +68,19 @@ public class Demo {
         types.add(String.class,"String");
         types.add(Boolean.class,"Bool");
         Net net = NetCore.register(netName,NetType.WebSocket);
-        net.getExceptionEvent().register((exception -> System.out.println(exception.getException().getMessage())));
+        net.getExceptionEvent().register(new ExceptionEventDelegate() {
+            @Override
+            public void onException(TrackException exception) {
+                System.out.println(exception.getException().getMessage());
+                exception.getException().printStackTrace();
+            }
+        });
         net.getLogEvent().register(log -> System.out.println(log.getMessage()));
         //向网关注册服务
         Service service = ServiceCore.register(ClientService.class,net,"Client",types);
         //向网关注册请求
         ServerRequest serverRequest = RequestCore.register(ServerRequest.class,net,"Server",types);
-        ((Request)Proxy.getInvocationHandler(serverRequest)).onConnectSuccess();
+        serverRequest.onConnectSuccess();
         //开启分布式
         net.getConfig().setNetNodeMode(true);
         ArrayList<Pair<String, ClientConfig>> ips = new ArrayList<>();
@@ -82,7 +90,7 @@ public class Demo {
         net.getConfig().setNetNodeIps(ips);
         //启动服务
         net.publish();
-        ((Request) Proxy.getInvocationHandler(serverRequest)).getConnectSuccessEvent().register(request -> {
+        serverRequest.getConnectSuccessEvent().register(request -> {
             ServerRequest _request = (ServerRequest)RequestCore.get(net,"Server");
             Integer result = ((ServerRequest)_request).Add(3,4);
             System.out.println("结果值是:" + result);

@@ -1,9 +1,10 @@
 package ServiceDemo;
 
-import Service.Annotation.Service;
-import Core.Model.User;
+import Model.User;
+import com.ethereal.client.Service.Annotation.Service;
+import com.ethereal.client.Service.WebSocket.WebSocketService;
 
-public class ClientService {
+public class ClientService extends WebSocketService {
     @Service
     public void Say(User sender, String message)
     {
