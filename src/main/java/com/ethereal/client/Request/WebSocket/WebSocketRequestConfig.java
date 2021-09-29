@@ -16,21 +16,7 @@ import com.ethereal.client.Request.Abstract.RequestConfig;
  * @Version: 1.0
  */
 public class WebSocketRequestConfig extends RequestConfig {
-    private AbstractTypes type;
     private int timeout = -1;
-
-    public WebSocketRequestConfig(AbstractTypes type){
-        super(type);
-        this.type = type;
-    }
-
-    public AbstractTypes getType() {
-        return type;
-    }
-
-    public void setType(AbstractTypes type) {
-        this.type = type;
-    }
 
     public int getTimeout() {
         return timeout;

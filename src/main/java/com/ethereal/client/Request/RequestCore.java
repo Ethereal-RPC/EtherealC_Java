@@ -27,19 +27,19 @@ public class RequestCore {
         return (T)request;
     }
 
-    public static <T> T register(Class<?> instance_class,Net net, String serviceName, AbstractTypes type) throws TrackException {
+    public static <T> T register(Class<?> instance_class,Net net, String serviceName, AbstractTypes types) throws TrackException {
         if(net.getNetType() == NetType.WebSocket){
-            return register(instance_class,net,serviceName,new WebSocketRequestConfig(type));
+            return register(instance_class,net,serviceName,types,null);
         }
         else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Request-Register处理",net.getNetType()));
     }
 
-    public static <T> T register(Class<?> instance_class,Net net,String serviceName, RequestConfig config) throws TrackException {
+    public static <T> T register(Class<?> instance_class,Net net,String serviceName, AbstractTypes types, RequestConfig config) throws TrackException {
         Request request = null;
         request = net.getRequests().get(serviceName);
         if(request == null){
             try{
-                request = Request.register((Class<Request>) instance_class,net.getName(),serviceName,config);
+                request = Request.register((Class<Request>) instance_class,net.getName(),serviceName, types,config);
                 request.getExceptionEvent().register(net::onException);
                 request.getLogEvent().register(net::onLog);
                 net.getRequests().put(serviceName, request);

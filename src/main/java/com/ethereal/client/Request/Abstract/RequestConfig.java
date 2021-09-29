@@ -16,20 +16,7 @@ import com.ethereal.client.Request.Interface.IRequestConfig;
  * @Version: 1.0
  */
 public abstract class RequestConfig implements IRequestConfig {
-    private AbstractTypes type;
     private int timeout = -1;
-
-    public RequestConfig(AbstractTypes type){
-        this.type = type;
-    }
-
-    public AbstractTypes getType() {
-        return type;
-    }
-
-    public void setType(AbstractTypes type) {
-        this.type = type;
-    }
 
     public int getTimeout() {
         return timeout;

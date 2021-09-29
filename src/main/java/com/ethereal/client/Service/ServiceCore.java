@@ -25,26 +25,32 @@ public class ServiceCore {
     }
 
 
-    public static <T> T register(Service instance,Net net, String serviceName, AbstractTypes type) throws TrackException {
+    public static <T> T register(Class<?> instanceClass,Net net,String serviceName, AbstractTypes types, ServiceConfig config) throws TrackException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         if(net.getNetType() == NetType.WebSocket){
-            return register(instance,net,serviceName,new ServiceConfig(type));
+            return register((Service) instanceClass.getDeclaredConstructor().newInstance(),net,serviceName,types,config);
         }
         else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Service-Register处理",net.getNetType()));
     }
-    public static <T> T register(Class<?> instanceClass,Net net,String serviceName, AbstractTypes type) throws TrackException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+    public static <T> T register(Class<?> instanceClass,Net net,String serviceName, AbstractTypes types) throws TrackException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         if(net.getNetType() == NetType.WebSocket){
-            return register((Service) instanceClass.getDeclaredConstructor().newInstance(),net,serviceName,new ServiceConfig(type));
+            return register((Service) instanceClass.getDeclaredConstructor().newInstance(),net,serviceName,types,null);
         }
         else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Service-Register处理",net.getNetType()));
     }
-    public static <T> T register(Class<?> instanceClass,Net net,String serviceName, ServiceConfig config) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, TrackException {
-        return register((Service) instanceClass.getDeclaredConstructor().newInstance(),net,serviceName,config);
+
+    public static <T> T register(Service instance,Net net,String serviceName, AbstractTypes types) throws TrackException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        if(net.getNetType() == NetType.WebSocket){
+            return register(instance,net,serviceName,types,null);
+        }
+        else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Service-Register处理",net.getNetType()));
     }
-    public static <T> T register(Service instance, Net net, String serviceName, ServiceConfig config) throws TrackException {
+
+    public static <T> T register(Service instance, Net net, String serviceName, AbstractTypes types, ServiceConfig config) throws TrackException {
         Service service = net.getServices().get(serviceName);
         if(service == null){
             try{
-                Service.register((Service) instance,net.getName(),config);
+                Service.register((Service) instance,net.getName(),types,config);
                 net.getServices().put(serviceName,instance);
                 instance.getExceptionEvent().register(net::onException);
                 instance.getLogEvent().register(net::onLog);

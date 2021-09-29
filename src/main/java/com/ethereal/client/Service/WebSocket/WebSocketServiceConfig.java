@@ -17,7 +17,5 @@ import com.ethereal.client.Service.Abstract.ServiceConfig;
  */
 public class WebSocketServiceConfig extends ServiceConfig {
 
-    public WebSocketServiceConfig(AbstractTypes type) {
-        super(type);
-    }
+
 }

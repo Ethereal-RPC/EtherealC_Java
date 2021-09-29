@@ -18,7 +18,6 @@ public abstract class Service implements IService {
     protected AbstractTypes types;
     protected String netName;
     protected ServiceConfig config;
-
     protected ExceptionEvent exceptionEvent = new ExceptionEvent();
     protected LogEvent logEvent = new LogEvent();
 
@@ -74,9 +73,10 @@ public abstract class Service implements IService {
         logEvent.onEvent(log);
     }
 
-    public static void register(Service instance, String netName, com.ethereal.client.Service.Abstract.ServiceConfig config) throws java.lang.Exception {
+    public static void register(Service instance, String netName,AbstractTypes types, com.ethereal.client.Service.Abstract.ServiceConfig config) throws java.lang.Exception {
+        if(config != null)instance.config = config;
         instance.netName = netName;
-        instance.config = config;
+        instance.types = types;
         //反射 获取类信息=>字段、属性、方法
         StringBuilder methodId = new StringBuilder();
         for(Method method : instance.getClass().getMethods())
@@ -88,7 +88,7 @@ public abstract class Service implements IService {
                     methodId.append(method.getName());
                     if(annotation.parameters().length == 0){
                         for(Class<?> parameter_type : method.getParameterTypes()){
-                            AbstractType rpcType = config.getTypes().getTypesByType().get(parameter_type);
+                            AbstractType rpcType = instance.types.getTypesByType().get(parameter_type);
                             if(rpcType != null) {
                                 methodId.append("-").append(rpcType.getName());
                             }
@@ -98,7 +98,7 @@ public abstract class Service implements IService {
                     else {
                         String[] types_name = annotation.parameters();
                         for(String type_name : types_name){
-                            if(config.getTypes().getTypesByName().containsKey(type_name)){
+                            if(instance.types.getTypesByName().containsKey(type_name)){
                                 methodId.append("-").append(type_name);
                             }
                             else throw new TrackException(TrackException.ErrorCode.Runtime,String.format("Java中的%s抽象类型参数尚未注册,请注意是否是泛型导致！",type_name));

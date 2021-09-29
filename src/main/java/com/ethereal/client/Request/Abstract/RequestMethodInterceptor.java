@@ -37,7 +37,7 @@ public class RequestMethodInterceptor implements MethodInterceptor {
             if(annotation.parameters().length == 0){
                 Class<?>[] parameters = method.getParameterTypes();
                 for(int i=0,j=1;i<param_count;i++,j++){
-                    AbstractType rpcType = instance.config.getType().getTypesByType().get(parameters[i]);
+                    AbstractType rpcType = instance.types.getTypesByType().get(parameters[i]);
                     if(rpcType != null) {
                         methodId.append("-").append(rpcType.getName());
                         array[j] = rpcType.getSerialize().Serialize(args[i]);
@@ -49,7 +49,7 @@ public class RequestMethodInterceptor implements MethodInterceptor {
                 String[] types_name = annotation.parameters();
                 if(param_count == types_name.length){
                     for(int i=0,j=1;i<args.length;i++,j++){
-                        AbstractType rpcType = instance.config.getType().getTypesByName().get(types_name[i]);
+                        AbstractType rpcType = instance.types.getTypesByName().get(types_name[i]);
                         if(rpcType!=null){
                             methodId.append("-").append(rpcType.getName());
                             array[j] = rpcType.getSerialize().Serialize(args[i]);
@@ -83,7 +83,7 @@ public class RequestMethodInterceptor implements MethodInterceptor {
                                 }
                                 else throw new TrackException(TrackException.ErrorCode.Runtime,"来自服务端的报错信息：\n" + respond.getError().getMessage());
                             }
-                            AbstractType rpcType = instance.config.getType().getTypesByName().get(respond.getResultType());
+                            AbstractType rpcType = instance.types.getTypesByName().get(respond.getResultType());
                             if(rpcType!=null){
                                 remoteResult = rpcType.getDeserialize().Deserialize(respond.getResult());
                                 if((annotation.invokeType() & InvokeTypeFlags.Success) != 0

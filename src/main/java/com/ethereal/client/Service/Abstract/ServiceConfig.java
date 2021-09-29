@@ -16,17 +16,5 @@ import com.ethereal.client.Service.Interface.IServiceConfig;
  * @Version: 1.0
  */
 public class ServiceConfig implements IServiceConfig {
-    private AbstractTypes types;
 
-    public AbstractTypes getTypes() {
-        return types;
-    }
-
-    public void setTypes(AbstractTypes types) {
-        this.types = types;
-    }
-
-    public ServiceConfig(AbstractTypes type) {
-        this.types = type;
-    }
 }

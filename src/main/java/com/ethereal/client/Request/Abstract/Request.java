@@ -2,6 +2,7 @@ package com.ethereal.client.Request.Abstract;
 
 import com.ethereal.client.Core.Event.ExceptionEvent;
 import com.ethereal.client.Core.Event.LogEvent;
+import com.ethereal.client.Core.Model.AbstractTypes;
 import com.ethereal.client.Core.Model.ClientRequestModel;
 import com.ethereal.client.Core.Model.TrackException;
 import com.ethereal.client.Core.Model.TrackLog;
@@ -20,7 +21,17 @@ public abstract class Request implements IRequest {
     protected Client client;//连接体
     protected ExceptionEvent exceptionEvent = new ExceptionEvent();
     protected LogEvent logEvent = new LogEvent();
-    public static Request register(Class<Request> instance_class, String netName, String serviceName, com.ethereal.client.Request.Abstract.RequestConfig config){
+    protected AbstractTypes types;
+
+    public AbstractTypes getTypes() {
+        return types;
+    }
+
+    public void setTypes(AbstractTypes types) {
+        this.types = types;
+    }
+
+    public static Request register(Class<Request> instance_class, String netName, String serviceName,AbstractTypes types, com.ethereal.client.Request.Abstract.RequestConfig config){
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(instance_class);
         RequestMethodInterceptor  interceptor = new RequestMethodInterceptor();
@@ -36,7 +47,8 @@ public abstract class Request implements IRequest {
         interceptor.setInstance(instance);
         instance.setName(serviceName);
         instance.setNetName(netName);
-        instance.setConfig(config);
+        instance.setTypes(types);
+        if(config != null)instance.setConfig(config);
         return instance;
     }
 
