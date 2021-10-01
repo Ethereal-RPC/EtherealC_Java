@@ -16,13 +16,5 @@ import com.ethereal.client.Request.Abstract.RequestConfig;
  * @Version: 1.0
  */
 public class WebSocketRequestConfig extends RequestConfig {
-    private int timeout = -1;
 
-    public int getTimeout() {
-        return timeout;
-    }
-
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
-    }
 }

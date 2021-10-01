@@ -1,16 +1,11 @@
 package com.ethereal.client.Request;
 
-import com.ethereal.client.Core.Enums.NetType;
 import com.ethereal.client.Core.Model.TrackException;
 import com.ethereal.client.Core.Model.AbstractTypes;
 import com.ethereal.client.Client.ClientCore;
 import com.ethereal.client.Net.Abstract.Net;
 import com.ethereal.client.Net.NetCore;
 import com.ethereal.client.Request.Abstract.Request;
-import com.ethereal.client.Request.Abstract.RequestConfig;
-import com.ethereal.client.Request.WebSocket.WebSocketRequestConfig;
-
-import java.lang.reflect.Proxy;
 
 public class RequestCore {
     //获取Request实体
@@ -27,29 +22,21 @@ public class RequestCore {
         return (T)request;
     }
 
-    public static <T> T register(Class<?> instance_class,Net net, String serviceName, AbstractTypes types) throws TrackException {
-        if(net.getNetType() == NetType.WebSocket){
-            return register(instance_class,net,serviceName,types,null);
-        }
-        else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Request-Register处理",net.getNetType()));
+    public static <T> T register(Net net, Class<?> requestClass) throws TrackException {
+        return register(net,requestClass,null,null);
     }
-
-    public static <T> T register(Class<?> instance_class,Net net,String serviceName, AbstractTypes types, RequestConfig config) throws TrackException {
-        Request request = null;
-        request = net.getRequests().get(serviceName);
-        if(request == null){
-            try{
-                request = Request.register((Class<Request>) instance_class,net.getName(),serviceName, types,config);
-                request.getExceptionEvent().register(net::onException);
-                request.getLogEvent().register(net::onLog);
-                net.getRequests().put(serviceName, request);
-            }
-            catch (java.lang.Exception err){
-                throw new TrackException(TrackException.ErrorCode.Core,serviceName + "异常报错，销毁注册\n" + err.getMessage());
-            }
+    public static <T> T register(Net net, Class<?> requestClass, String serviceName, AbstractTypes types) throws TrackException {
+        Request request = Request.register((Class<Request>) requestClass);
+        if(serviceName!=null)request.setName(serviceName);
+        if(types!=null)request.setTypes(types);
+        if(!net.getRequests().containsKey(request.getName())){
+            request.setNetName(net.getName());
+            request.getExceptionEvent().register(net::onException);
+            request.getLogEvent().register(net::onLog);
+            net.getRequests().put(request.getName(), request);
+            return (T)request;
         }
         else throw new TrackException(TrackException.ErrorCode.Core,String.format("%s-%s已注册,无法重复注册！", net.getName(),serviceName));
-        return (T)request;
     }
 
     public static boolean unregister(String netName,String serviceName)  {

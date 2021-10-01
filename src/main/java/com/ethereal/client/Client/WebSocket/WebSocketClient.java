@@ -3,9 +3,9 @@ package com.ethereal.client.Client.WebSocket;
 import com.ethereal.client.Core.Model.ClientRequestModel;
 import com.ethereal.client.Core.Model.TrackException;
 import com.ethereal.client.Client.Abstract.Client;
-import com.ethereal.client.Client.Abstract.ClientConfig;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -36,40 +36,28 @@ import java.util.concurrent.Executors;
  * @Version: 1.0
  */
 public class WebSocketClient extends Client {
-    protected String prefixes;
     protected ChannelFuture channelFuture;
     protected boolean isDisConnect = false;
     protected Bootstrap bootstrap;
     protected ExecutorService es;
 
-    public WebSocketClient(String netName, String serviceName, String prefixes, ClientConfig config) {
-        this.config = config;
-        this.netName = netName;
-        this.serviceName = serviceName;
-        this.prefixes = prefixes;
+    public WebSocketClient(String prefixes) {
+        super(prefixes);
+        this.config = new WebSocketClientConfig();
         this.es=Executors.newFixedThreadPool(getConfig().threadCount);
     }
+
     public ExecutorService getEs() {
         return es;
     }
     public void setEs(ExecutorService es) {
         this.es = es;
     }
-    public String getPrefixes() {
-        return prefixes;
-    }
-
-    public void setPrefixes(String prefixes) {
-        this.prefixes = prefixes;
-    }
 
     public WebSocketClientConfig getConfig() {
         return (WebSocketClientConfig)config;
     }
 
-    public void setConfig(ClientConfig config) {
-        this.config = config;
-    }
     @Override
     public void connect() {
         if (channelFuture != null) {
@@ -94,26 +82,35 @@ public class WebSocketClient extends Client {
                             //心跳包
                             ch.pipeline().addLast(new IdleStateHandler(0,0,5));
                             ch.pipeline().addLast(customWebSocketHandler);
+
                         }
                     });
             if(getConfig().isSyncConnect){
-                channelFuture = bootstrap.connect(uri.getHost(),uri.getPort());
-                webSocketHandler.getHandshakeFuture();
+                channelFuture = bootstrap.connect(uri.getHost(),uri.getPort()).addListener(new ChannelFutureListener() {
+                    @Override
+                    public void operationComplete(ChannelFuture future) throws Exception {
+                        if(!future.isSuccess()){
+                            onConnectFail();
+                        }
+                    }
+                }).sync();
             }
             else {
-                channelFuture = bootstrap.connect(uri.getHost(),uri.getPort()).sync();
-                webSocketHandler.getHandshakeFuture().sync();
+                channelFuture = bootstrap.connect(uri.getHost(),uri.getPort()).addListener((ChannelFutureListener) future -> {
+                    if(!future.isSuccess()){
+                        onConnectFail();
+                    }
+                });
             }
         }
-        catch (java.lang.Exception e){
+        catch (Exception e){
             onException(new TrackException(e));
-            group.shutdownGracefully();
-            onDisConnectEvent();
         }
     }
+
     @Override
     public boolean sendClientRequestModel(ClientRequestModel request) {
-        if(channelFuture.channel() !=null && channelFuture.channel().isActive()){
+        if(isConnect()){
             String json = config.getClientRequestModelSerialize().Serialize(request);
             //多转一次格式，用户可能使用非Config的编码.
             json = new String(json.getBytes(config.getCharset()));
@@ -138,24 +135,25 @@ public class WebSocketClient extends Client {
         }
         finally {
             if(!temp){
-                //es.execute(this::onDisConnectEvent);
-                onDisConnectEvent();
+                onDisConnect();
             }
         }
     }
 
     public boolean isConnect(){
-        if(channelFuture != null && channelFuture.channel() != null){
-            return true;
-        }
-        return false;
+        return channelFuture != null && channelFuture.channel() != null && channelFuture.channel().isActive();
     }
     @Override
     public void onConnectSuccess() {
-        es.execute(()->connectEvent.onEvent(this));
+        es.execute(()-> connectSuccessEvent.onEvent(this));
     }
     @Override
-    public void onDisConnectEvent() {
+    public void onDisConnect() {
         es.execute(()->disConnectEvent.onEvent(this));
+    }
+
+    @Override
+    public void onConnectFail() {
+        es.execute(()->connectFailEvent.onEvent(this));
     }
 }

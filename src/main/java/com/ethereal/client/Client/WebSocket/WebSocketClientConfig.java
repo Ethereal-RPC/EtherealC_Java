@@ -5,7 +5,7 @@ import com.ethereal.client.Client.Abstract.ClientConfig;
 public class WebSocketClientConfig extends ClientConfig {
     protected int maxBufferSize = 10240;
     protected int threadCount = 5;
-    protected boolean isSyncConnect = true;
+    protected boolean isSyncConnect = false;
 
     public boolean isSyncConnect() {
         return isSyncConnect;

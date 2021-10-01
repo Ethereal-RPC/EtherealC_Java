@@ -1,15 +1,11 @@
 package com.ethereal.client.Service;
 
-import ServiceDemo.ClientService;
 import com.ethereal.client.Core.Enums.NetType;
 import com.ethereal.client.Core.Model.TrackException;
 import com.ethereal.client.Core.Model.AbstractTypes;
 import com.ethereal.client.Net.Abstract.Net;
 import com.ethereal.client.Net.NetCore;
-import com.ethereal.client.Request.Abstract.Request;
 import com.ethereal.client.Service.Abstract.Service;
-import com.ethereal.client.Service.Abstract.ServiceConfig;
-import com.ethereal.client.Service.WebSocket.WebSocketService;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -23,44 +19,21 @@ public class ServiceCore {
     public static <T> T get(Net net,String serviceName)  {
         return (T)net.getServices().get(serviceName);
     }
-
-
-    public static <T> T register(Class<?> instanceClass,Net net,String serviceName, AbstractTypes types, ServiceConfig config) throws TrackException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        if(net.getNetType() == NetType.WebSocket){
-            return register((Service) instanceClass.getDeclaredConstructor().newInstance(),net,serviceName,types,config);
-        }
-        else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Service-Register处理",net.getNetType()));
+    public static <T> T register(Net net,Service service) throws TrackException{
+        return register(net,service,null,null);
     }
-
-    public static <T> T register(Class<?> instanceClass,Net net,String serviceName, AbstractTypes types) throws TrackException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        if(net.getNetType() == NetType.WebSocket){
-            return register((Service) instanceClass.getDeclaredConstructor().newInstance(),net,serviceName,types,null);
+    public static <T> T register(Net net,Service service,String serviceName,AbstractTypes types) throws TrackException {
+        if(serviceName!=null)service.setName(serviceName);
+        if(types!=null)service.setTypes(types);
+        Service.register(service);
+        if(!net.getServices().containsKey(service.getName())){
+            service.setNetName(net.getName());
+            service.getExceptionEvent().register(net::onException);
+            service.getLogEvent().register(net::onLog);
+            net.getServices().put(service.getName(),service);
+            return (T) service;
         }
-        else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Service-Register处理",net.getNetType()));
-    }
-
-    public static <T> T register(Service instance,Net net,String serviceName, AbstractTypes types) throws TrackException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        if(net.getNetType() == NetType.WebSocket){
-            return register(instance,net,serviceName,types,null);
-        }
-        else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Service-Register处理",net.getNetType()));
-    }
-
-    public static <T> T register(Service instance, Net net, String serviceName, AbstractTypes types, ServiceConfig config) throws TrackException {
-        Service service = net.getServices().get(serviceName);
-        if(service == null){
-            try{
-                Service.register((Service) instance,net.getName(),types,config);
-                net.getServices().put(serviceName,instance);
-                instance.getExceptionEvent().register(net::onException);
-                instance.getLogEvent().register(net::onLog);
-                return (T) instance;
-            }
-            catch (java.lang.Exception err){
-                throw new TrackException(TrackException.ErrorCode.Core,serviceName + "异常报错，销毁注册\n" + err.getMessage());
-            }
-        }
-        else throw new TrackException(TrackException.ErrorCode.Core,String.format("%s已注册,无法重复注册！",net.getName(),serviceName));
+        else throw new TrackException(TrackException.ErrorCode.Core,String.format("%s已注册,无法重复注册！",net.getName(),service.getName()));
     }
 
     public static boolean unregister(String netName,String serviceName) throws TrackException {

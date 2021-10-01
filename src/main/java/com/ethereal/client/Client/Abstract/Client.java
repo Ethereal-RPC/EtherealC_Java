@@ -1,10 +1,11 @@
 package com.ethereal.client.Client.Abstract;
 
+import com.ethereal.client.Client.Event.ConnectFailEvent;
 import com.ethereal.client.Core.Event.ExceptionEvent;
 import com.ethereal.client.Core.Event.LogEvent;
 import com.ethereal.client.Core.Model.TrackException;
 import com.ethereal.client.Core.Model.TrackLog;
-import com.ethereal.client.Client.Event.ConnectEvent;
+import com.ethereal.client.Client.Event.ConnectSuccessEvent;
 import com.ethereal.client.Client.Event.DisConnectEvent;
 import com.ethereal.client.Client.Interface.IClient;
 
@@ -22,19 +23,32 @@ import com.ethereal.client.Client.Interface.IClient;
  */
 public abstract class Client implements IClient {
     protected ClientConfig config;
+    protected String prefixes;
     protected String netName;
     protected String serviceName;
     protected ExceptionEvent exceptionEvent = new ExceptionEvent();
     protected LogEvent logEvent = new LogEvent();
-    protected ConnectEvent connectEvent = new ConnectEvent();
+    protected ConnectSuccessEvent connectSuccessEvent = new ConnectSuccessEvent();
+    protected ConnectFailEvent connectFailEvent = new ConnectFailEvent();
     protected DisConnectEvent disConnectEvent = new DisConnectEvent();
-
-    public ConnectEvent getConnectEvent() {
-        return connectEvent;
+    public Client(String prefixes){
+        this.prefixes = prefixes;
     }
 
-    public void setConnectEvent(ConnectEvent connectEvent) {
-        this.connectEvent = connectEvent;
+    public String getPrefixes() {
+        return prefixes;
+    }
+
+    public void setPrefixes(String prefixes) {
+        this.prefixes = prefixes;
+    }
+
+    public ConnectSuccessEvent getConnectSuccessEvent() {
+        return connectSuccessEvent;
+    }
+
+    public void setConnectSuccessEvent(ConnectSuccessEvent connectSuccessEvent) {
+        this.connectSuccessEvent = connectSuccessEvent;
     }
 
     public DisConnectEvent getDisConnectEvent() {
@@ -103,11 +117,21 @@ public abstract class Client implements IClient {
         logEvent.onEvent(log);
     }
 
-    public void onConnectSuccess() {
-        connectEvent.onEvent(this);
+    public ConnectFailEvent getConnectFailEvent() {
+        return connectFailEvent;
     }
 
-    public void onDisConnectEvent() {
+    public void setConnectFailEvent(ConnectFailEvent connectFailEvent) {
+        this.connectFailEvent = connectFailEvent;
+    }
+
+    public void onConnectSuccess() {
+        connectSuccessEvent.onEvent(this);
+    }
+    public void onConnectFail() {
+        connectFailEvent.onEvent(this);
+    }
+    public void onDisConnect() {
         disConnectEvent.onEvent(this);
     }
 }

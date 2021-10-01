@@ -21,7 +21,7 @@ public abstract class Request implements IRequest {
     protected Client client;//连接体
     protected ExceptionEvent exceptionEvent = new ExceptionEvent();
     protected LogEvent logEvent = new LogEvent();
-    protected AbstractTypes types;
+    protected AbstractTypes types = new AbstractTypes();
 
     public AbstractTypes getTypes() {
         return types;
@@ -31,7 +31,7 @@ public abstract class Request implements IRequest {
         this.types = types;
     }
 
-    public static Request register(Class<Request> instance_class, String netName, String serviceName,AbstractTypes types, com.ethereal.client.Request.Abstract.RequestConfig config){
+    public static Request register(Class<Request> instance_class){
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(instance_class);
         RequestMethodInterceptor  interceptor = new RequestMethodInterceptor();
@@ -45,10 +45,6 @@ public abstract class Request implements IRequest {
         });
         Request instance = (Request)enhancer.create();
         interceptor.setInstance(instance);
-        instance.setName(serviceName);
-        instance.setNetName(netName);
-        instance.setTypes(types);
-        if(config != null)instance.setConfig(config);
         return instance;
     }
 

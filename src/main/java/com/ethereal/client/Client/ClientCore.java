@@ -1,11 +1,7 @@
 package com.ethereal.client.Client;
 
-import com.ethereal.client.Core.Enums.NetType;
 import com.ethereal.client.Core.Model.TrackException;
 import com.ethereal.client.Client.Abstract.Client;
-import com.ethereal.client.Client.Abstract.ClientConfig;
-import com.ethereal.client.Client.WebSocket.WebSocketClient;
-import com.ethereal.client.Client.WebSocket.WebSocketClientConfig;
 import com.ethereal.client.Net.Abstract.Net;
 import com.ethereal.client.Net.NetCore;
 import com.ethereal.client.Request.Abstract.Request;
@@ -28,67 +24,30 @@ public class ClientCore {
         }
         else return null;
     }
-
-    public static Client register(Net net, String serviceName, String prefixes) throws TrackException {
+    public static Client register(Net net, String serviceName, Client client) throws TrackException {
         Request request = RequestCore.get(net,serviceName);
         if(request != null){
-            if(net.getNetType() == NetType.WebSocket){
-                return register(request,prefixes,new WebSocketClientConfig());
-            }
-            else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Client-Register处理",net.getNetType()));
+            return register(request,client);
         }
         else throw new TrackException(TrackException.ErrorCode.Core, String.format("%s-%s 未找到！", net.getName(),serviceName));
     }
 
-    public static Client register(Net net, String serviceName,String prefixes, ClientConfig config) throws TrackException {
-        Request request = RequestCore.get(net,serviceName);
-        if(request != null){
-            if(net.getNetType() == NetType.WebSocket){
-                return register(request,prefixes,config);
-            }
-            else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Client-Register处理",net.getNetType()));
-        }
-        else throw new TrackException(TrackException.ErrorCode.Core, String.format("%s-%s 未找到！", net.getName(),serviceName));
-    }
-    public static Client register(Request request, String prefixes) throws TrackException {
-        Net net =  NetCore.get(request.getNetName());
-        if(net != null){
-            if(net.getNetType() == NetType.WebSocket){
-                return register(request,prefixes,new WebSocketClientConfig());
-            }
-            else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Client-Register处理",net.getNetType()));
-        }
-        else throw new TrackException(TrackException.ErrorCode.Core, String.format("%s 未找到！", net.getName()));
-    }
-
-    public static Client register(Request request, String prefixes, ClientConfig config) throws TrackException {
-        Client socketClient = null;
-        if(request != null){
-            socketClient = request.getClient();
-            if(socketClient == null){
-                Net net =  NetCore.get(request.getNetName());
-                if(net != null ){
-                    if(net.getNetType() == NetType.WebSocket){
-                        socketClient = new WebSocketClient(request.getNetName(),request.getName(),prefixes,config);
-                    }
-                    else {
-                        throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Client-Register处理",net.getNetType()));
-                    }
+    public static Client register(Request request, Client client) throws TrackException {
+        if(request.getClient() == null){
+            request.setClient(client);
+            client.setNetName(request.getNetName());
+            client.setServiceName(request.getName());
+            client.getLogEvent().register(request::onLog);//日志系统
+            client.getExceptionEvent().register(request::onException);//异常系统
+            client.getConnectSuccessEvent().register(value -> {
+                Request _request = RequestCore.get(value.getNetName(), value.getServiceName());
+                if(_request!=null)
+                {
+                    _request.onConnectSuccess();
                 }
-                request.setClient(socketClient);
-                socketClient.getLogEvent().register(request::onLog);//日志系统
-                socketClient.getExceptionEvent().register(request::onException);//异常系统
-                socketClient.getConnectEvent().register(client -> {
-                    Request _request = RequestCore.get(client.getNetName(), client.getServiceName());
-                    if(_request!=null)
-                    {
-                        _request.onConnectSuccess();
-                    }
-                });
-            }
-            return socketClient;
+            });
         }
-        else throw new TrackException(TrackException.ErrorCode.Core, String.format("%s-%s 未找到！",request.getNetName(),request.getName()));
+        return client;
     }
 
     public static boolean unregister(String netName,String serviceName)  {

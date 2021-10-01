@@ -3,18 +3,19 @@ package com.ethereal.client.Core.Model;
 import com.google.gson.annotations.Expose;
 
 public class Error {
+    public enum ErrorCode { Intercepted,NotFoundService,NotFoundMethod,NotFoundNet,BufferFlow,Common,MaxConnects }
     @Expose
-    private int Code;
+    private ErrorCode Code;
     @Expose
     private String Message;
     @Expose
     private String Data;
 
-    public int getCode() {
+    public ErrorCode getCode() {
         return Code;
     }
 
-    public void setCode(int code) {
+    public void setCode(ErrorCode code) {
         Code = code;
     }
 

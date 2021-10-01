@@ -5,8 +5,6 @@ import com.ethereal.client.Core.Event.ExceptionEvent;
 import com.ethereal.client.Core.Event.LogEvent;
 import com.ethereal.client.Core.Model.*;
 import com.ethereal.client.Core.Model.TrackException;
-import com.ethereal.client.Net.Delegate.IClientResponseReceive;
-import com.ethereal.client.Net.Delegate.IServerRequestReceive;
 import com.ethereal.client.Net.Interface.INet;
 import com.ethereal.client.Request.Abstract.Request;
 import com.ethereal.client.Service.Abstract.Service;
@@ -17,8 +15,6 @@ import java.util.HashMap;
 
 public abstract class Net implements INet {
     protected NetConfig config;
-    protected IServerRequestReceive serverRequestReceive;
-    protected IClientResponseReceive clientResponseReceive;
     protected String name;
     protected NetType netType;
     protected ExceptionEvent exceptionEvent = new ExceptionEvent();
@@ -26,7 +22,9 @@ public abstract class Net implements INet {
     //Java没有自带三元组，这里就引用Kotlin了.
     protected HashMap<String, Service> services = new HashMap<>();
     protected HashMap<String, Request> requests = new HashMap<>();
-
+    public Net(String name){
+        this.name = name;
+    }
     public NetType getNetType() {
         return netType;
     }
@@ -52,23 +50,6 @@ public abstract class Net implements INet {
     }
 
 
-
-    public IServerRequestReceive getServerRequestReceive() {
-        return serverRequestReceive;
-    }
-
-    public void setServerRequestReceive(IServerRequestReceive serverRequestReceive) {
-        this.serverRequestReceive = serverRequestReceive;
-    }
-
-    public IClientResponseReceive getClientResponseReceive() {
-        return clientResponseReceive;
-    }
-
-    public void setClientResponseReceive(IClientResponseReceive clientResponseReceive) {
-        this.clientResponseReceive = clientResponseReceive;
-    }
-
     public NetConfig getConfig() {
         return config;
     }
@@ -91,11 +72,6 @@ public abstract class Net implements INet {
 
     public void setRequests(HashMap<String, Request> requests) {
         this.requests = requests;
-    }
-
-    public Net(){
-        serverRequestReceive = this::serverRequestReceiveProcess;
-        clientResponseReceive = this::clientResponseProcess;
     }
     @Override
     public void serverRequestReceiveProcess(ServerRequestModel request) throws java.lang.Exception {

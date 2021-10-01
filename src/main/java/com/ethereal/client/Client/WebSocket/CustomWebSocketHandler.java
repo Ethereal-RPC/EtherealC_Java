@@ -53,7 +53,7 @@ public class CustomWebSocketHandler extends SimpleChannelInboundHandler<Object> 
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        client.es.execute(()->client.onDisConnectEvent());
+        client.es.execute(()->client.onDisConnect());
     }
 
     @Override
@@ -65,13 +65,14 @@ public class CustomWebSocketHandler extends SimpleChannelInboundHandler<Object> 
                     handshaker.finishHandshake(ch, (FullHttpResponse) msg);
                     client.onLog(TrackLog.LogCode.Runtime,"WebSocket com.ethereal.client.Client connected!");
                     handshakeFuture.setSuccess();
-                    this.client.onConnectSuccess();
+                    client.onConnectSuccess();
                 } catch (WebSocketHandshakeException e) {
                     handshakeFuture.setFailure(e);
                     throw new TrackException(TrackException.ErrorCode.Runtime,"WebSocket com.ethereal.client.Client failed to connect");
                 }
                 return;
             }
+
             if (msg instanceof FullHttpResponse) {
                 FullHttpResponse response = (FullHttpResponse) msg;
                 throw new IllegalStateException("Unexpected FullHttpResponse (content=" + response.content().toString(CharsetUtil.UTF_8) + ')');
@@ -82,7 +83,7 @@ public class CustomWebSocketHandler extends SimpleChannelInboundHandler<Object> 
                 Net net = NetCore.get(client.getNetName());
                 if(net == null){
                     throw new TrackException(TrackException.ErrorCode.Runtime,
-                            String.format("未找到net", client.getNetName()));
+                            String.format("未找到net%s", client.getNetName()));
                 }
                 JsonObject json_object = JsonParser.parseString(data).getAsJsonObject();
                 if(json_object.get("Type").toString().equals("ER-1.0-ServerRequest")){
@@ -91,7 +92,7 @@ public class CustomWebSocketHandler extends SimpleChannelInboundHandler<Object> 
                     ServerRequestModel serverRequestModel = client.getConfig().getServerRequestModelDeserialize().Deserialize(data);
                     client.es.execute(()->{
                         try {
-                            net.getServerRequestReceive().ServerRequestReceive(serverRequestModel);
+                            net.serverRequestReceiveProcess(serverRequestModel);
                         } catch (java.lang.Exception e) {
                             net.onException(new TrackException(e));
                         }
@@ -102,7 +103,7 @@ public class CustomWebSocketHandler extends SimpleChannelInboundHandler<Object> 
                     ClientResponseModel clientResponseModel = client.getConfig().getClientResponseModelDeserialize().Deserialize(data);
                     client.es.execute(()->{
                         try {
-                            net.getClientResponseReceive().ClientResponseReceive(clientResponseModel);
+                            net.clientResponseProcess(clientResponseModel);
                         } catch (java.lang.Exception e) {
                             net.onException(new TrackException(e));
                         }
@@ -121,7 +122,7 @@ public class CustomWebSocketHandler extends SimpleChannelInboundHandler<Object> 
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
+        client.onException(TrackException.ErrorCode.NotEthereal,cause.getMessage());
         if (!handshakeFuture.isDone()) {
             handshakeFuture.setFailure(cause);
         }

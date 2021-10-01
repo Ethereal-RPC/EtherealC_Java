@@ -8,6 +8,7 @@ import com.ethereal.client.Net.WebSocket.WebSocketNet;
 import com.ethereal.client.Net.WebSocket.WebSocketNetConfig;
 import com.ethereal.client.Request.Abstract.Request;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
 public class NetCore {
@@ -20,27 +21,13 @@ public class NetCore {
         return nets.get(name);
     }
 
-
-    public static Net register(String name,NetType netType) throws TrackException {
-        if(netType == NetType.WebSocket){
-            return register(name,new WebSocketNetConfig(),netType);
-        }
-        else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Net-Register处理",netType));
-    }
-    public static Net register(String name, NetConfig config, NetType netType) throws TrackException {
-        Net net = nets.get(name);
-        if (net == null)
+    public static Net register(Net net) throws TrackException {
+        if (!nets.containsKey(net.getName()))
         {
-            if(netType == NetType.WebSocket){
-                net = new WebSocketNet();
-            }
-            else throw new TrackException(TrackException.ErrorCode.Core, String.format("未有针对%s的Net-Register处理",netType));
-            net.setConfig(config);
-            net.setName(name);
-            nets.put(name, net);
+            nets.put(net.getName(), net);
             return net;
         }
-        else return null;
+        else throw new TrackException(TrackException.ErrorCode.Core, String.format("Net:%s 已注册", net.getName()));
     }
 
     public static Boolean unregister(String name)  {
