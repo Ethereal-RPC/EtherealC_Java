@@ -22,13 +22,13 @@ import java.util.ArrayList;
 public class Demo {
     public static void main(String[] args) throws Exception {
         //单节点
-        //single("127.0.0.1:28015/NetDemo/","1");
+        //single("ethereal://127.0.0.1:28015/NetDemo/","1");
         //分布式
         ArrayList<String> arrayList = new ArrayList<>();
-        arrayList.add("127.0.0.1:28015/NetDemo/");
-        arrayList.add("127.0.0.1:28016/NetDemo/");
-        arrayList.add("127.0.0.1:28017/NetDemo/");
-        arrayList.add("127.0.0.1:28018/NetDemo/");
+        arrayList.add("ethereal://127.0.0.1:28015/NetDemo/");
+        arrayList.add("ethereal://127.0.0.1:28016/NetDemo/");
+        arrayList.add("ethereal://127.0.0.1:28017/NetDemo/");
+        arrayList.add("ethereal://127.0.0.1:28018/NetDemo/");
         netNode("demo",arrayList);
     }
     public static void single(String prefixes,String netName) throws Exception {
