@@ -2,6 +2,8 @@ package com.ethereal.client.Core.Model;
 
 import com.google.gson.annotations.Expose;
 
+import java.util.Arrays;
+
 public class ClientRequestModel {
     @Expose(serialize = false,deserialize = false)
     private ClientResponseModel Result;
@@ -87,10 +89,12 @@ public class ClientRequestModel {
     @Override
     public String toString() {
         return "ClientRequestModel{" +
-                "Type='" + Type + '\'' +
+                "Result=" + Result +
+                ", Type='" + Type + '\'' +
                 ", MethodId='" + MethodId + '\'' +
-                ", Params=" + com.ethereal.client.Utils.Utils.gson.toJson(Params) +
-                ", com.ethereal.client.Service='" + Service + '\'' +
+                ", Params=" + Arrays.toString(Params) +
+                ", Id='" + Id + '\'' +
+                ", Service='" + Service + '\'' +
                 '}';
     }
 }

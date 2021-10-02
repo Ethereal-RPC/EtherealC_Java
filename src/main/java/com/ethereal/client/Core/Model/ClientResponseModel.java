@@ -4,47 +4,40 @@ import com.google.gson.annotations.Expose;
 
 public class ClientResponseModel {
     @Expose
-    private String Type = "ER-1.0-ClientResponse";
+    private String type = "ER-1.0-ClientResponse";
     @Expose
-    private String Result = null;
+    private String result = null;
     @Expose
-    private String ResultType = null;
+    private String resultType = null;
     @Expose
     private Error error = null;
     @Expose
-    private String Id = null;
+    private String id = null;
     @Expose
     private String service = null;
+
     public String getType() {
-        return Type;
+        return type;
     }
 
     public void setType(String type) {
-        Type = type;
+        this.type = type;
     }
 
     public String getResult() {
-        return Result;
+        return result;
     }
 
     public void setResult(String result) {
-        Result = result;
+        this.result = result;
     }
 
     public String getResultType() {
-        return ResultType;
+        return resultType;
     }
 
     public void setResultType(String resultType) {
-        ResultType = resultType;
-    }
-
-    public String getId() {
-        return Id;
-    }
-
-    public void setId(String id) {
-        Id = id;
+        this.resultType = resultType;
     }
 
     public Error getError() {
@@ -53,6 +46,14 @@ public class ClientResponseModel {
 
     public void setError(Error error) {
         this.error = error;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getService() {
@@ -66,11 +67,11 @@ public class ClientResponseModel {
     @Override
     public String toString() {
         return "ClientResponseModel{" +
-                "Type='" + Type + '\'' +
-                ", Result='" + Result + '\'' +
-                ", ResultType='" + ResultType + '\'' +
+                "type='" + type + '\'' +
+                ", result='" + result + '\'' +
+                ", resultType='" + resultType + '\'' +
                 ", error=" + error +
-                ", Id='" + Id + '\'' +
+                ", id='" + id + '\'' +
                 ", service='" + service + '\'' +
                 '}';
     }

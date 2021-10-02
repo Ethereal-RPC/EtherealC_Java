@@ -66,7 +66,7 @@ public class WebSocketClient extends Client {
         }
         NioEventLoopGroup group = new NioEventLoopGroup(1);
         try {
-            URI uri = new URI(prefixes.replace("ethereal://","ws:///"));
+            URI uri = new URI(prefixes.replace("ethereal://","ws://"));
             CustomWebSocketHandler webSocketHandler = new CustomWebSocketHandler(this,WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders()));
             CustomHeartbeatHandler customWebSocketHandler = new CustomHeartbeatHandler(this);
             bootstrap = new Bootstrap();               //1

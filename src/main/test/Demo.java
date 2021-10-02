@@ -24,6 +24,10 @@ import java.util.Scanner;
 
 public class Demo {
     public static void main(String[] args) throws Exception {
+        //single();
+        netNode();
+    }
+    public static void single() throws Exception {
         Scanner scanner = new Scanner(System.in);
         String  port = "28015";
         System.out.println("请选择端口(0-3):");
@@ -42,11 +46,6 @@ public class Demo {
                 port = "28018";
                 break;
         }
-        //单节点
-        //single(port);
-        netNode();
-    }
-    public static void single(String port) throws Exception {
         AbstractTypes types = new AbstractTypes();
         types.add(Integer.class,"Int");
         types.add(Long.class,"Long");
