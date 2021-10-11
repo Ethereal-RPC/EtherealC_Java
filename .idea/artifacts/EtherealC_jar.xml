@@ -3,7 +3,6 @@
     <output-path>$PROJECT_DIR$/out/artifacts/EtherealC_jar</output-path>
     <root id="archive" name="EtherealC.jar">
       <element id="module-output" name="EtherealC" />
-      <element id="library" level="project" name="Maven: org.javatuples:javatuples:1.2" />
     </root>
   </artifact>
 </component>

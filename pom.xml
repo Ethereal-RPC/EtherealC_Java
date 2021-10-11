@@ -10,7 +10,7 @@
     <description>Ethereal Client</description>
     <url>https://github.com/Ethereal-RPC/</url>
     <packaging>pom</packaging>
-    <version>1.0</version>
+    <version>1.0.2</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
