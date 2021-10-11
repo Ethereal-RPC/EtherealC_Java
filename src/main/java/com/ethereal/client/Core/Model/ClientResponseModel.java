@@ -8,8 +8,6 @@ public class ClientResponseModel {
     @Expose
     private String result = null;
     @Expose
-    private String resultType = null;
-    @Expose
     private Error error = null;
     @Expose
     private String id = null;
@@ -30,14 +28,6 @@ public class ClientResponseModel {
 
     public void setResult(String result) {
         this.result = result;
-    }
-
-    public String getResultType() {
-        return resultType;
-    }
-
-    public void setResultType(String resultType) {
-        this.resultType = resultType;
     }
 
     public Error getError() {
@@ -69,7 +59,6 @@ public class ClientResponseModel {
         return "ClientResponseModel{" +
                 "type='" + type + '\'' +
                 ", result='" + result + '\'' +
-                ", resultType='" + resultType + '\'' +
                 ", error=" + error +
                 ", id='" + id + '\'' +
                 ", service='" + service + '\'' +

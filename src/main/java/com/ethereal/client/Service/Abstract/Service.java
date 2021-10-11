@@ -10,6 +10,7 @@ import com.ethereal.client.Service.Interface.IService;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.util.HashMap;
 
 public abstract class Service implements IService {
@@ -107,23 +108,12 @@ public abstract class Service implements IService {
             if(annotation!=null){
                 if(!Modifier.isInterface(modifier)){
                     methodId.append(method.getName());
-                    if(annotation.parameters().length == 0){
-                        for(Class<?> parameter_type : method.getParameterTypes()){
-                            AbstractType rpcType = service.types.getTypesByType().get(parameter_type);
-                            if(rpcType != null) {
-                                methodId.append("-").append(rpcType.getName());
-                            }
-                            else throw new TrackException(TrackException.ErrorCode.Runtime,String.format("Java中的%s类型参数尚未注册,请注意是否是泛型导致！",parameter_type.getName()));
-                        }
-                    }
-                    else {
-                        String[] types_name = annotation.parameters();
-                        for(String type_name : types_name){
-                            if(service.types.getTypesByName().containsKey(type_name)){
-                                methodId.append("-").append(type_name);
-                            }
-                            else throw new TrackException(TrackException.ErrorCode.Runtime,String.format("Java中的%s抽象类型参数尚未注册,请注意是否是泛型导致！",type_name));
-                        }
+                    Parameter[] parameterInfos = method.getParameters();
+                    for(Parameter parameterInfo : parameterInfos){
+                        AbstractType type = service.getTypes().getTypesByType().get(parameterInfo.getParameterizedType());
+                        if(type == null)type = service.getTypes().getTypesByName().get(method.getAnnotation(com.ethereal.client.Core.Annotation.AbstractType.class).abstractName());
+                        if(type == null)throw new TrackException(TrackException.ErrorCode.Runtime,String.format("RPC中的%s类型参数尚未被注册！",parameterInfo.getParameterizedType()));
+                        methodId.append("-").append(type.getName());
                     }
                     service.methods.put(methodId.toString(),method);
                     methodId.setLength(0);

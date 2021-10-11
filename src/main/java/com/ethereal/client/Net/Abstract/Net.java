@@ -10,7 +10,9 @@ import com.ethereal.client.Request.Abstract.Request;
 import com.ethereal.client.Service.Abstract.Service;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public abstract class Net implements INet {
@@ -80,17 +82,18 @@ public abstract class Net implements INet {
         if(service != null){
             method = service.getMethods().get(request.getMethodId());
             if(method!= null){
-                //开始序列化参数
-                String[] param_id = request.getMethodId().split("-");
-                for (int i = 1,j=0; i < param_id.length; i++,j++)
+                Parameter[] parameterInfos = method.getParameters();
+                ArrayList<Object> parameters = new ArrayList<>(parameterInfos.length);
+                int i = 0;
+                for (Parameter parameterInfo : parameterInfos)
                 {
-                    AbstractType rpcType = service.getTypes().getTypesByName().get(param_id[i]);
-                    if(rpcType == null){
-                        throw new TrackException(TrackException.ErrorCode.Runtime,String.format("RPC中的%s类型参数尚未被注册！",param_id[i]));
-                    }
-                    else request.getParams()[j] = rpcType.getDeserialize().Deserialize((String)request.getParams()[j]);
+                    AbstractType type;
+                    type = service.getTypes().getTypesByType().get(parameterInfo.getParameterizedType());
+                    if(type == null)type = service.getTypes().getTypesByName().get(parameterInfo.getAnnotation(com.ethereal.client.Core.Annotation.AbstractType.class).abstractName());
+                    if(type == null)throw new TrackException(TrackException.ErrorCode.Runtime,String.format("RPC中的%s类型参数尚未被注册！",parameterInfo.getParameterizedType()));
+                    parameters.add(type.getDeserialize().Deserialize(request.getParams()[i]));
                 }
-                method.invoke(service,request.getParams());
+                method.invoke(service,parameters.toArray(new Object[]{}));
             }
             else {
                 throw new TrackException(TrackException.ErrorCode.Runtime,String.format("%s-%s-%s Not Found",name,request.getService(),request.getMethodId()));

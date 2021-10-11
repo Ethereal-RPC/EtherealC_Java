@@ -9,6 +9,8 @@ import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.Random;
 
 public class RequestMethodInterceptor implements MethodInterceptor {
@@ -30,36 +32,16 @@ public class RequestMethodInterceptor implements MethodInterceptor {
         Object remoteResult = null;
         if((annotation.invokeType() & InvokeTypeFlags.Local) == 0){
             StringBuilder methodId = new StringBuilder(method.getName());
-            int param_count;
-            if(args!=null)param_count = args.length;
-            else param_count = 0;
-            String[] array = new String[param_count + 1];
-            if(annotation.parameters().length == 0){
-                Class<?>[] parameters = method.getParameterTypes();
-                for(int i=0,j=1;i<param_count;i++,j++){
-                    AbstractType rpcType = instance.types.getTypesByType().get(parameters[i]);
-                    if(rpcType != null) {
-                        methodId.append("-").append(rpcType.getName());
-                        array[j] = rpcType.getSerialize().Serialize(args[i]);
-                    }
-                    else throw new TrackException(TrackException.ErrorCode.Runtime,String.format("Java中的%s类型参数尚未注册！",parameters[i].getName()));
-                }
+            Parameter[] parameterInfos = method.getParameters();
+            ArrayList<String> params = new ArrayList<>(parameterInfos.length - 1);
+            for(int i = 0; i< parameterInfos.length; i++){
+                AbstractType type = instance.getTypes().getTypesByType().get(parameterInfos[i].getParameterizedType());
+                if(type == null)type = instance.getTypes().getTypesByName().get(method.getAnnotation(com.ethereal.client.Core.Annotation.AbstractType.class).abstractName());
+                if(type == null)throw new TrackException(TrackException.ErrorCode.Runtime,String.format("RPC中的%s类型参数尚未被注册！",parameterInfos[i].getParameterizedType()));
+                methodId.append("-").append(type.getName());
+                params.add(type.getSerialize().Serialize(args[i]));
             }
-            else {
-                String[] types_name = annotation.parameters();
-                if(param_count == types_name.length){
-                    for(int i=0,j=1;i<args.length;i++,j++){
-                        AbstractType rpcType = instance.types.getTypesByName().get(types_name[i]);
-                        if(rpcType!=null){
-                            methodId.append("-").append(rpcType.getName());
-                            array[j] = rpcType.getSerialize().Serialize(args[i]);
-                        }
-                        else throw new TrackException(TrackException.ErrorCode.Runtime,String.format("方法体%s中的抽象类型为%s的类型尚未注册！",method.getName(),types_name[i]));
-                    }
-                }
-                else throw new TrackException(TrackException.ErrorCode.Runtime,String.format("方法体%s中RPCMethod注解与实际参数数量不符,@RPCRequest:%d个,Method:%d个",method.getName(),types_name.length,args.length));
-            }
-            ClientRequestModel request = new ClientRequestModel("2.0", instance.name, methodId.toString(),array);
+            ClientRequestModel request = new ClientRequestModel("2.0", instance.name, methodId.toString(),params.toArray(new String[]{}));
             Class<?> return_type = method.getReturnType();
             if(return_type.equals(Void.TYPE)){
                 instance.client.sendClientRequestModel(request);
@@ -83,15 +65,14 @@ public class RequestMethodInterceptor implements MethodInterceptor {
                                 }
                                 else throw new TrackException(TrackException.ErrorCode.Runtime,"来自服务端的报错信息：\n" + respond.getError().getMessage());
                             }
-                            AbstractType rpcType = instance.types.getTypesByName().get(respond.getResultType());
-                            if(rpcType!=null){
-                                remoteResult = rpcType.getDeserialize().Deserialize(respond.getResult());
-                                if((annotation.invokeType() & InvokeTypeFlags.Success) != 0
-                                        || (annotation.invokeType() & InvokeTypeFlags.All) != 0){
-                                    localResult = methodProxy.invokeSuper(instance,args);
-                                }
+                            AbstractType type = instance.getTypes().getTypesByType().get(return_type);
+                            if(type == null)type = instance.getTypes().getTypesByName().get(method.getAnnotation(com.ethereal.client.Core.Annotation.AbstractType.class).abstractName());
+                            if(type == null)throw new TrackException(TrackException.ErrorCode.Runtime,String.format("RPC中的%s类型参数尚未被注册！",return_type));
+                            remoteResult = type.getDeserialize().Deserialize(respond.getResult());
+                            if((annotation.invokeType() & InvokeTypeFlags.Success) != 0
+                                    || (annotation.invokeType() & InvokeTypeFlags.All) != 0){
+                                localResult = methodProxy.invokeSuper(instance,args);
                             }
-                            else throw new TrackException(TrackException.ErrorCode.Runtime,respond.getResultType() + "抽象数据类型尚未注册");
                         }
                         else if((annotation.invokeType() & InvokeTypeFlags.Timeout) != 0){
                             localResult = methodProxy.invokeSuper(instance,args);
