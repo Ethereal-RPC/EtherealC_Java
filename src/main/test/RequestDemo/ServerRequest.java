@@ -14,8 +14,11 @@ public class ServerRequest extends WebSocketRequest {
     public Boolean SendSay(Long listener_id, String message){
         return false;
     }
+
+
     @Request(invokeType = InvokeTypeFlags.All | InvokeTypeFlags.ReturnRemote)
     public Integer Add(Integer a, Integer b){
         return 23;
     }
+
 }

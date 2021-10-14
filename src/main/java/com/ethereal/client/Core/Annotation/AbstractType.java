@@ -3,7 +3,7 @@ package com.ethereal.client.Core.Annotation;
 import java.lang.annotation.*;
 
 @Documented
-@Target(ElementType.PARAMETER)
+@Target(value = {ElementType.PARAMETER,ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AbstractType {
         String abstractName() default "";
