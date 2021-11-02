@@ -94,7 +94,7 @@ public class ClientRequestModel {
                 ", MethodId='" + MethodId + '\'' +
                 ", Params=" + Arrays.toString(Params) +
                 ", Id='" + Id + '\'' +
-                ", Service='" + Service + '\'' +
+                ", ServiceMethod='" + Service + '\'' +
                 '}';
     }
 }

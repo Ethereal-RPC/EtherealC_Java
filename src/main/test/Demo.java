@@ -24,8 +24,7 @@ import java.util.Scanner;
 
 public class Demo {
     public static void main(String[] args) throws Exception {
-        //single();
-        netNode();
+        single();
     }
     public static void single() throws Exception {
         Scanner scanner = new Scanner(System.in);
@@ -66,46 +65,7 @@ public class Demo {
             Integer result = ((ServerRequest)request).Add(3,4);
             System.out.println("结果值是:" + result);
         });
-        //关闭分布式
-        net.getConfig().setNetNodeMode(false);
         //启动服务
         net.publish();
-    }
-    public static void netNode() throws Exception {
-        AbstractTypes types = new AbstractTypes();
-        types.add(Integer.class,"Int");
-        types.add(User.class,"User");
-        types.add(Long.class,"Long");
-        types.add(String.class,"String");
-        types.add(Boolean.class,"Bool");
-        Net net = NetCore.register(new WebSocketNet("demo"));
-        net.getExceptionEvent().register(new ExceptionEventDelegate() {
-            @Override
-            public void onException(TrackException exception) {
-                System.out.println(exception.getException().getMessage());
-                exception.getException().printStackTrace();
-            }
-        });
-        net.getLogEvent().register(log -> System.out.println(log.getMessage()));
-        //向网关注册服务
-        Service service = ServiceCore.register(net,new ClientService(),"Client",types);
-        //向网关注册请求
-        ServerRequest serverRequest = RequestCore.register(net,ServerRequest.class,"Server",types);
-        //开启分布式
-        net.getConfig().setNetNodeMode(true);
-        //分布式
-        ArrayList<Pair<String, ClientConfig>> ips = new ArrayList<>();
-        ips.add(new Pair<>("ethereal://127.0.0.1:28015/NetDemo/",null));
-        ips.add(new Pair<>("ethereal://127.0.0.1:28016/NetDemo/",null));
-        ips.add(new Pair<>("ethereal://127.0.0.1:28017/NetDemo/",null));
-        ips.add(new Pair<>("ethereal://127.0.0.1:28018/NetDemo/",null));
-        net.getConfig().setNetNodeIps(ips);
-        //启动服务
-        net.publish();
-        serverRequest.getConnectSuccessEvent().register(request -> {
-            ServerRequest _request = (ServerRequest)RequestCore.get(net,"Server");
-            Integer result = ((ServerRequest)_request).Add(3,4);
-            System.out.println("结果值是:" + result);
-        });
     }
 }

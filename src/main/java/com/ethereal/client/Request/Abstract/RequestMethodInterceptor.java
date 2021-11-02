@@ -5,6 +5,7 @@ import com.ethereal.client.Core.Model.ClientRequestModel;
 import com.ethereal.client.Core.Model.ClientResponseModel;
 import com.ethereal.client.Core.Model.TrackException;
 import com.ethereal.client.Request.Annotation.InvokeTypeFlags;
+import com.ethereal.client.Request.Annotation.RequestMethod;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
@@ -27,7 +28,7 @@ public class RequestMethodInterceptor implements MethodInterceptor {
 
     @Override
     public Object intercept(Object o, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
-        com.ethereal.client.Request.Annotation.Request annotation = method.getAnnotation(com.ethereal.client.Request.Annotation.Request.class);
+        RequestMethod annotation = method.getAnnotation(RequestMethod.class);
         Object localResult = null;
         Object remoteResult = null;
         if((annotation.invokeType() & InvokeTypeFlags.Local) == 0){

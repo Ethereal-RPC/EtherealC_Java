@@ -1,24 +1,33 @@
 package RequestDemo;
 
 import com.ethereal.client.Request.Annotation.InvokeTypeFlags;
-import com.ethereal.client.Request.Annotation.Request;
+import com.ethereal.client.Request.Annotation.RequestMethod;
 import com.ethereal.client.Request.WebSocket.WebSocketRequest;
 
 
 public class ServerRequest extends WebSocketRequest {
-    @Request
+    @RequestMethod
     public Boolean Register(String username, Long id){
         return false;
     }
-    @Request
+    @RequestMethod
     public Boolean SendSay(Long listener_id, String message){
         return false;
     }
 
 
-    @Request(invokeType = InvokeTypeFlags.All | InvokeTypeFlags.ReturnRemote)
+    @RequestMethod(invokeType = InvokeTypeFlags.All | InvokeTypeFlags.ReturnRemote)
     public Integer Add(Integer a, Integer b){
         return 23;
     }
 
+    @Override
+    public void initialize() {
+
+    }
+
+    @Override
+    public void unInitialize() {
+
+    }
 }

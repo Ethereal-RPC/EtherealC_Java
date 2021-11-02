@@ -6,13 +6,14 @@ import com.ethereal.client.Core.Model.AbstractType;
 import com.ethereal.client.Core.Model.TrackException;
 import com.ethereal.client.Core.Model.TrackLog;
 import com.ethereal.client.Core.Model.AbstractTypes;
+import com.ethereal.client.Service.Annotation.ServiceMethod;
 import com.ethereal.client.Service.Interface.IService;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.HashMap;
-
+@com.ethereal.client.Service.Annotation.Service
 public abstract class Service implements IService {
     protected HashMap<String,Method> methods = new HashMap<>();
     protected AbstractTypes types = new AbstractTypes();
@@ -104,7 +105,7 @@ public abstract class Service implements IService {
         for(Method method : service.getClass().getMethods())
         {
             int modifier = method.getModifiers();
-            com.ethereal.client.Service.Annotation.Service annotation = method.getAnnotation(com.ethereal.client.Service.Annotation.Service.class);
+            ServiceMethod annotation = method.getAnnotation(ServiceMethod.class);
             if(annotation!=null){
                 if(!Modifier.isInterface(modifier)){
                     methodId.append(method.getName());
