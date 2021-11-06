@@ -45,7 +45,7 @@ public class RequestMethodInterceptor implements MethodInterceptor {
             ClientRequestModel request = new ClientRequestModel("2.0", instance.name, methodId.toString(),params.toArray(new String[]{}));
             Class<?> return_type = method.getReturnType();
             if(return_type.equals(Void.TYPE)){
-                instance.client.sendClientRequestModel(request);
+                instance.getNet().getClient().sendClientRequestModel(request);
             }
             else{
                 int id = random.nextInt();
@@ -57,7 +57,7 @@ public class RequestMethodInterceptor implements MethodInterceptor {
                 try {
                     int timeout = instance.config.getTimeout();
                     if(annotation.timeout() != -1)timeout = annotation.timeout();
-                    if(instance.client.sendClientRequestModel(request)){
+                    if(instance.getNet().getClient().sendClientRequestModel(request)){
                         ClientResponseModel respond = request.getResult(timeout);
                         if(respond != null){
                             if(respond.getError()!=null){

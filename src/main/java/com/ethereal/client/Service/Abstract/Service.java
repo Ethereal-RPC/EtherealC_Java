@@ -6,6 +6,7 @@ import com.ethereal.client.Core.Model.AbstractType;
 import com.ethereal.client.Core.Model.TrackException;
 import com.ethereal.client.Core.Model.TrackLog;
 import com.ethereal.client.Core.Model.AbstractTypes;
+import com.ethereal.client.Net.Abstract.Net;
 import com.ethereal.client.Service.Annotation.ServiceMethod;
 import com.ethereal.client.Service.Interface.IService;
 
@@ -17,18 +18,18 @@ import java.util.HashMap;
 public abstract class Service implements IService {
     protected HashMap<String,Method> methods = new HashMap<>();
     protected AbstractTypes types = new AbstractTypes();
-    protected String netName;
+    protected Net net;
     protected String name;
     protected ServiceConfig config;
     protected ExceptionEvent exceptionEvent = new ExceptionEvent();
     protected LogEvent logEvent = new LogEvent();
 
-    public String getNetName() {
-        return netName;
+    public Net getNet() {
+        return net;
     }
 
-    public void setNetName(String netName) {
-        this.netName = netName;
+    public void setNet(Net net) {
+        this.net = net;
     }
 
     public String getName() {

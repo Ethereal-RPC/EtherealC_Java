@@ -39,9 +39,7 @@ public class NetCore {
         if(net != null){
             if(nets.containsKey(net.getName())){
                 //清除请求上的连接
-                for(Object request : net.getRequests().values()){
-                    ((Request)request).getClient().disConnect();
-                }
+                net.getClient().disConnect();
                 net.getRequests().clear();
                 net.getServices().clear();
                 NetConfig config = null;

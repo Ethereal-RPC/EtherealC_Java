@@ -1,5 +1,6 @@
 package com.ethereal.client.Net.Abstract;
 
+import com.ethereal.client.Client.Abstract.Client;
 import com.ethereal.client.Core.Enums.NetType;
 import com.ethereal.client.Core.Event.ExceptionEvent;
 import com.ethereal.client.Core.Event.LogEvent;
@@ -24,6 +25,16 @@ public abstract class Net implements INet {
     //Java没有自带三元组，这里就引用Kotlin了.
     protected HashMap<String, Service> services = new HashMap<>();
     protected HashMap<String, Request> requests = new HashMap<>();
+    protected Client client;
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
+    }
+
     public Net(String name){
         this.name = name;
     }

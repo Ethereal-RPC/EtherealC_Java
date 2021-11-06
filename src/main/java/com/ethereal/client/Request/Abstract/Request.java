@@ -7,6 +7,7 @@ import com.ethereal.client.Core.Model.ClientRequestModel;
 import com.ethereal.client.Core.Model.TrackException;
 import com.ethereal.client.Core.Model.TrackLog;
 import com.ethereal.client.Client.Abstract.Client;
+import com.ethereal.client.Net.Abstract.Net;
 import com.ethereal.client.Request.Annotation.RequestMethod;
 import com.ethereal.client.Request.Event.ConnectSuccessEvent;
 import com.ethereal.client.Request.Interface.IRequest;
@@ -17,9 +18,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class Request implements IRequest {
     protected final ConcurrentHashMap<Integer,ClientRequestModel> tasks = new ConcurrentHashMap<>();
     protected String name;
-    protected String netName;
+    protected Net net;
     protected RequestConfig config;
-    protected Client client;//连接体
     protected ExceptionEvent exceptionEvent = new ExceptionEvent();
     protected LogEvent logEvent = new LogEvent();
     protected AbstractTypes types = new AbstractTypes();
@@ -60,14 +60,6 @@ public abstract class Request implements IRequest {
         this.connectSuccessEvent = connectSuccessEvent;
     }
 
-    public Client getClient() {
-        return client;
-    }
-
-    public void setClient(Client client) {
-        this.client = client;
-    }
-
     public RequestConfig getConfig() {
         return config;
     }
@@ -86,12 +78,12 @@ public abstract class Request implements IRequest {
         this.name = name;
     }
 
-    public String getNetName() {
-        return netName;
+    public Net getNet() {
+        return net;
     }
 
-    public void setNetName(String netName) {
-        this.netName = netName;
+    public void setNet(Net net) {
+        this.net = net;
     }
 
     public ExceptionEvent getExceptionEvent() {

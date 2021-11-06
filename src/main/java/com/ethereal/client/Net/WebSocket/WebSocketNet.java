@@ -34,8 +34,8 @@ public class WebSocketNet extends Net {
     @Override
     public boolean publish() throws java.lang.Exception {
         try {
-            for(Request request : requests.values()){
-                request.getClient().connect();
+            if(client!=null){
+                client.connect();
             }
         }
         catch (Exception e){

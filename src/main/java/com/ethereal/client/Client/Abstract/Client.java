@@ -8,6 +8,7 @@ import com.ethereal.client.Core.Model.TrackLog;
 import com.ethereal.client.Client.Event.ConnectSuccessEvent;
 import com.ethereal.client.Client.Event.DisConnectEvent;
 import com.ethereal.client.Client.Interface.IClient;
+import com.ethereal.client.Net.Abstract.Net;
 
 /**
  * @ProjectName: YiXian
@@ -24,8 +25,7 @@ import com.ethereal.client.Client.Interface.IClient;
 public abstract class Client implements IClient {
     protected ClientConfig config;
     protected String prefixes;
-    protected String netName;
-    protected String serviceName;
+    protected Net net;
     protected ExceptionEvent exceptionEvent = new ExceptionEvent();
     protected LogEvent logEvent = new LogEvent();
     protected ConnectSuccessEvent connectSuccessEvent = new ConnectSuccessEvent();
@@ -75,20 +75,12 @@ public abstract class Client implements IClient {
         this.logEvent = logEvent;
     }
 
-    public String getServiceName() {
-        return serviceName;
+    public Net getNet() {
+        return net;
     }
 
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
-    }
-
-    public String getNetName() {
-        return netName;
-    }
-
-    public void setNetName(String netName) {
-        this.netName = netName;
+    public void setNet(Net net) {
+        this.net = net;
     }
 
     public ClientConfig getConfig() {

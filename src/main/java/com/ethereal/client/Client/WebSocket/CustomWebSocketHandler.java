@@ -80,11 +80,6 @@ public class CustomWebSocketHandler extends SimpleChannelInboundHandler<Object> 
 
             if (msg instanceof TextWebSocketFrame) {
                 String data = ((TextWebSocketFrame) msg).content().toString(client.getConfig().getCharset());
-                Net net = NetCore.get(client.getNetName());
-                if(net == null){
-                    throw new TrackException(TrackException.ErrorCode.Runtime,
-                            String.format("未找到net%s", client.getNetName()));
-                }
                 JsonObject json_object = JsonParser.parseString(data).getAsJsonObject();
                 if(json_object.get("Type").toString().equals("ER-1.0-ServerRequest")){
                     client.onLog(TrackLog.LogCode.Runtime,"[服-请求]:" + data);
@@ -92,9 +87,9 @@ public class CustomWebSocketHandler extends SimpleChannelInboundHandler<Object> 
                     ServerRequestModel serverRequestModel = client.getConfig().getServerRequestModelDeserialize().Deserialize(data);
                     client.es.execute(()->{
                         try {
-                            net.serverRequestReceiveProcess(serverRequestModel);
+                            client.getNet().serverRequestReceiveProcess(serverRequestModel);
                         } catch (java.lang.Exception e) {
-                            net.onException(new TrackException(e));
+                            client.onException(new TrackException(e));
                         }
                     });
                 }
@@ -103,9 +98,9 @@ public class CustomWebSocketHandler extends SimpleChannelInboundHandler<Object> 
                     ClientResponseModel clientResponseModel = client.getConfig().getClientResponseModelDeserialize().Deserialize(data);
                     client.es.execute(()->{
                         try {
-                            net.clientResponseProcess(clientResponseModel);
+                            client.getNet().clientResponseProcess(clientResponseModel);
                         } catch (java.lang.Exception e) {
-                            net.onException(new TrackException(e));
+                            client.onException(new TrackException(e));
                         }
                     });
                 }

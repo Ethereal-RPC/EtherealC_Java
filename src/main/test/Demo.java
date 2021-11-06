@@ -58,7 +58,7 @@ public class Demo {
         Service service = ServiceCore.register(net,new ClientService(),"Client",types);
         //向网关注册请求
         ServerRequest serverRequest = RequestCore.register(net,ServerRequest.class,"Server",types);
-        Client socketClient = ClientCore.register(serverRequest,new WebSocketClient("ethereal://127.0.0.1:28015/NetDemo/".replace("28015",port)));
+        Client socketClient = ClientCore.register(net,new WebSocketClient("ethereal://127.0.0.1:28015/NetDemo/".replace("28015",port)));
         socketClient.getConnectSuccessEvent().register(client -> System.out.println("Single启动成功"));
         socketClient.getDisConnectEvent().register(client -> System.out.println("Single启动失败"));
         serverRequest.getConnectSuccessEvent().register(request -> {
