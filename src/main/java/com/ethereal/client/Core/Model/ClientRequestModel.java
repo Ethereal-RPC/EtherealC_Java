@@ -10,13 +10,11 @@ public class ClientRequestModel {
     @Expose
     private String Type = "ER-1.0-ClientRequest";
     @Expose
-    private String MethodId;
+    private String Mapping;
     @Expose
     private String[] Params;
     @Expose
     private String Id;
-    @Expose
-    private String Service;
 
     public String getType() {
         return Type;
@@ -26,12 +24,12 @@ public class ClientRequestModel {
         Type = type;
     }
 
-    public String getMethodId() {
-        return MethodId;
+    public String getMapping() {
+        return Mapping;
     }
 
-    public void setMethodId(String methodId) {
-        MethodId = methodId;
+    public void setMapping(String mapping) {
+        Mapping = mapping;
     }
 
     public String[] getParams() {
@@ -48,21 +46,6 @@ public class ClientRequestModel {
 
     public void setId(String id) {
         Id = id;
-    }
-
-    public String getService() {
-        return Service;
-    }
-
-    public void setService(String service) {
-        Service = service;
-    }
-
-    public ClientRequestModel(String jsonRpc, String service, String methodId, String[] params) {
-        Type = jsonRpc;
-        MethodId = methodId;
-        Params = params;
-        Service = service;
     }
 
     public void setResult(ClientResponseModel result) {
@@ -91,10 +74,9 @@ public class ClientRequestModel {
         return "ClientRequestModel{" +
                 "Result=" + Result +
                 ", Type='" + Type + '\'' +
-                ", MethodId='" + MethodId + '\'' +
+                ", Mapping='" + Mapping + '\'' +
                 ", Params=" + Arrays.toString(Params) +
                 ", Id='" + Id + '\'' +
-                ", ServiceMethod='" + Service + '\'' +
                 '}';
     }
 }

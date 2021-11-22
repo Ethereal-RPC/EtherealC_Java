@@ -1,4 +1,4 @@
-package com.ethereal.client.Core.Event.Delegate;
+package com.ethereal.client.Core.EventRegister.Delegate;
 
 import com.ethereal.client.Core.Model.TrackException;
 

@@ -1,6 +1,6 @@
-package com.ethereal.client.Core.Event;
+package com.ethereal.client.Core.EventRegister;
 
-import com.ethereal.client.Core.Event.Delegate.LogEventDelegate;
+import com.ethereal.client.Core.EventRegister.Delegate.LogEventDelegate;
 import com.ethereal.client.Core.Model.TrackLog;
 
 import java.util.Iterator;

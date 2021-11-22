@@ -1,6 +1,6 @@
-package com.ethereal.client.Core.Event;
+package com.ethereal.client.Core.EventRegister;
 
-import com.ethereal.client.Core.Event.Delegate.ExceptionEventDelegate;
+import com.ethereal.client.Core.EventRegister.Delegate.ExceptionEventDelegate;
 import com.ethereal.client.Core.Model.TrackException;
 
 import java.util.Iterator;

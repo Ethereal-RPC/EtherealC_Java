@@ -31,16 +31,4 @@ public class WebSocketNet extends Net {
         netType = NetType.WebSocket;
         config = new WebSocketNetConfig();
     }
-    @Override
-    public boolean publish() throws java.lang.Exception {
-        try {
-            if(client!=null){
-                client.connect();
-            }
-        }
-        catch (Exception e){
-            onException(new TrackException(e));
-        }
-        return true;
-    }
 }

@@ -1,4 +1,4 @@
-package com.ethereal.client.Request.Event.Delegate;
+package com.ethereal.client.Request.EventRegister.Delegate;
 
 import com.ethereal.client.Request.Abstract.Request;
 

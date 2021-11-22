@@ -1,28 +1,33 @@
 package com.ethereal.client.Request.Abstract;
 
-import com.ethereal.client.Core.Event.ExceptionEvent;
-import com.ethereal.client.Core.Event.LogEvent;
-import com.ethereal.client.Core.Model.AbstractTypes;
-import com.ethereal.client.Core.Model.ClientRequestModel;
-import com.ethereal.client.Core.Model.TrackException;
-import com.ethereal.client.Core.Model.TrackLog;
 import com.ethereal.client.Client.Abstract.Client;
+import com.ethereal.client.Core.EventRegister.ExceptionEvent;
+import com.ethereal.client.Core.EventRegister.LogEvent;
+import com.ethereal.client.Core.Event.EventManager;
+import com.ethereal.client.Core.Interface.IBaseIoc;
+import com.ethereal.client.Core.Model.*;
 import com.ethereal.client.Net.Abstract.Net;
 import com.ethereal.client.Request.Annotation.RequestMethod;
-import com.ethereal.client.Request.Event.ConnectSuccessEvent;
+import com.ethereal.client.Request.EventRegister.ConnectSuccessEvent;
 import com.ethereal.client.Request.Interface.IRequest;
+import com.ethereal.client.Service.Abstract.Service;
 import net.sf.cglib.proxy.*;
 
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 @com.ethereal.client.Request.Annotation.Request
-public abstract class Request implements IRequest {
-    protected final ConcurrentHashMap<Integer,ClientRequestModel> tasks = new ConcurrentHashMap<>();
+public abstract class Request implements IRequest, IBaseIoc {
+    private final ConcurrentHashMap<Integer,ClientRequestModel> tasks = new ConcurrentHashMap<>();
     protected String name;
     protected Net net;
     protected RequestConfig config;
-    protected ExceptionEvent exceptionEvent = new ExceptionEvent();
-    protected LogEvent logEvent = new LogEvent();
+    private ExceptionEvent exceptionEvent = new ExceptionEvent();
+    private LogEvent logEvent = new LogEvent();
     protected AbstractTypes types = new AbstractTypes();
+    protected Client client;
+    private HashMap<String, Service> services = new HashMap<>();
+    private EventManager eventManager = new EventManager();
+    private HashMap<String,Object> iocContainer = new HashMap<>();
 
     public AbstractTypes getTypes() {
         return types;
@@ -32,10 +37,26 @@ public abstract class Request implements IRequest {
         this.types = types;
     }
 
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
+    }
+
+    public EventManager getEventManager() {
+        return eventManager;
+    }
+
+    public void setEventManager(EventManager eventManager) {
+        this.eventManager = eventManager;
+    }
+
     public static Request register(Class<Request> instance_class){
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(instance_class);
-        RequestMethodInterceptor  interceptor = new RequestMethodInterceptor();
+        RequestInterceptor interceptor = new RequestInterceptor();
         Callback noOp= NoOp.INSTANCE;
         enhancer.setCallbacks(new Callback[]{noOp,interceptor});
         enhancer.setCallbackFilter(method -> {
@@ -44,9 +65,7 @@ public abstract class Request implements IRequest {
             }
             else return 0;
         });
-        Request instance = (Request)enhancer.create();
-        interceptor.setInstance(instance);
-        return instance;
+        return (Request)enhancer.create();
     }
 
     //连接成功事件
@@ -58,6 +77,14 @@ public abstract class Request implements IRequest {
 
     public void setConnectSuccessEvent(ConnectSuccessEvent connectSuccessEvent) {
         this.connectSuccessEvent = connectSuccessEvent;
+    }
+
+    public HashMap<String, Service> getServices() {
+        return services;
+    }
+
+    public void setServices(HashMap<String, Service> services) {
+        this.services = services;
     }
 
     public RequestConfig getConfig() {
@@ -101,6 +128,17 @@ public abstract class Request implements IRequest {
     public void setLogEvent(LogEvent logEvent) {
         this.logEvent = logEvent;
     }
+
+
+    public void clientResponseProcess(ClientResponseModel response) throws TrackException {
+        Integer id = Integer.parseInt(response.getId());
+        ClientRequestModel requestModel = getTasks().get(id);
+        if(requestModel != null){
+            requestModel.setResult(response);
+        }
+        else throw new TrackException(TrackException.ErrorCode.Runtime,String.format("%s-%s-%s RequestId未找到",name,response.getService(),id));
+
+    }
     @Override
 
     public void onException(TrackException.ErrorCode code, String message) {
@@ -124,5 +162,29 @@ public abstract class Request implements IRequest {
 
     public void onConnectSuccess(){
         connectSuccessEvent.onEvent(this);
+    }
+
+
+    @Override
+    public void registerIoc(String name, Object instance) throws TrackException {
+        if(iocContainer.containsKey(name)){
+            throw new TrackException(TrackException.ErrorCode.Runtime, String.format("%s服务已经注册%sIOC实例",this.name,name));
+        }
+        iocContainer.put(name,instance);
+        eventManager.registerEventMethod(name,instance);
+    }
+
+    @Override
+    public void unregisterIoc(String name) {
+        if(iocContainer.containsKey(name)){
+            Object instance = iocContainer.get(name);
+            iocContainer.remove(name);
+            eventManager.unregisterEventMethod(name,instance);
+        }
+    }
+
+    @Override
+    public Object getIocObject(String name) {
+        return iocContainer.get(name);
     }
 }

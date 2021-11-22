@@ -6,7 +6,7 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RequestMethod {
-        String[] parameters() default {};
+        String mapping() default "";
         int timeout() default -1;
         int invokeType() default InvokeTypeFlags.Remote | InvokeTypeFlags.ReturnRemote;
 }

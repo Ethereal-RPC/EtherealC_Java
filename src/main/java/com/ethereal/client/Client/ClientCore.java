@@ -9,33 +9,31 @@ import com.ethereal.client.Request.RequestCore;
 
 public class ClientCore {
 
-    public static Client get(String netName)  {
-        Net net = NetCore.get(netName);//获取对应的网络节点
+    public static Client get(String net_name,String request_name)  {
+        Net net = NetCore.get(net_name);//获取对应的网络节点
         if(net != null){
-            return net.getClient();
+            Request request = RequestCore.get(net,request_name);//获取对应的网络节点
+            if(request!=null){
+                return request.getClient();
+            }
         }
-        else return null;
+        return null;
     }
 
-    public static Client register(Net net, Client client) throws TrackException {
-        if(net.getClient() == null){
-            net.setClient(client);
-            client.setNet(net);
-            client.getLogEvent().register(net::onLog);//日志系统
-            client.getExceptionEvent().register(net::onException);//异常系统
-            client.getConnectSuccessEvent().register(value -> {
-                for(Request request:value.getNet().getRequests().values())
-                {
-                    request.onConnectSuccess();
-                }
-            });
-        }
+    public static Client register(Request request, Client client) throws TrackException {
+        request.setClient(client);
+        client.setRequest(request);
+        client.getLogEvent().register(request::onLog);//日志系统
+        client.getExceptionEvent().register(request::onException);//异常系统
+        client.getConnectSuccessEvent().register(value -> {
+            request.onConnectSuccess();
+        });
         return client;
     }
 
     public static boolean unregister(Client client)  {
-        client.getNet().setClient(null);
-        client.setNet(null);
+        client.getRequest().setClient(null);
+        client.setRequest(null);
         client.disConnect();
         return true;
     }

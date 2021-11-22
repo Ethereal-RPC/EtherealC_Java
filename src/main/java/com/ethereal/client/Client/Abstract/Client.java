@@ -1,14 +1,14 @@
 package com.ethereal.client.Client.Abstract;
 
 import com.ethereal.client.Client.Event.ConnectFailEvent;
-import com.ethereal.client.Core.Event.ExceptionEvent;
-import com.ethereal.client.Core.Event.LogEvent;
+import com.ethereal.client.Core.EventRegister.ExceptionEvent;
+import com.ethereal.client.Core.EventRegister.LogEvent;
 import com.ethereal.client.Core.Model.TrackException;
 import com.ethereal.client.Core.Model.TrackLog;
 import com.ethereal.client.Client.Event.ConnectSuccessEvent;
 import com.ethereal.client.Client.Event.DisConnectEvent;
 import com.ethereal.client.Client.Interface.IClient;
-import com.ethereal.client.Net.Abstract.Net;
+import com.ethereal.client.Request.Abstract.Request;
 
 /**
  * @ProjectName: YiXian
@@ -25,7 +25,7 @@ import com.ethereal.client.Net.Abstract.Net;
 public abstract class Client implements IClient {
     protected ClientConfig config;
     protected String prefixes;
-    protected Net net;
+    protected Request request;
     protected ExceptionEvent exceptionEvent = new ExceptionEvent();
     protected LogEvent logEvent = new LogEvent();
     protected ConnectSuccessEvent connectSuccessEvent = new ConnectSuccessEvent();
@@ -75,12 +75,12 @@ public abstract class Client implements IClient {
         this.logEvent = logEvent;
     }
 
-    public Net getNet() {
-        return net;
+    public Request getRequest() {
+        return request;
     }
 
-    public void setNet(Net net) {
-        this.net = net;
+    public void setRequest(Request request) {
+        this.request = request;
     }
 
     public ClientConfig getConfig() {

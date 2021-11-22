@@ -6,6 +6,7 @@ import com.ethereal.client.Core.Model.TrackLog;
 import com.ethereal.client.Core.Model.ServerRequestModel;
 import com.ethereal.client.Net.Abstract.Net;
 import com.ethereal.client.Net.NetCore;
+import com.ethereal.client.Service.Abstract.Service;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.netty.channel.Channel;
@@ -87,7 +88,13 @@ public class CustomWebSocketHandler extends SimpleChannelInboundHandler<Object> 
                     ServerRequestModel serverRequestModel = client.getConfig().getServerRequestModelDeserialize().Deserialize(data);
                     client.es.execute(()->{
                         try {
-                            client.getNet().serverRequestReceiveProcess(serverRequestModel);
+                            Service service = client.getRequest().getServices().get(serverRequestModel.getService());
+                            if(service != null){
+                                service.serverRequestReceiveProcess(serverRequestModel);
+                            }
+                            else {
+                                throw new TrackException(TrackException.ErrorCode.Runtime,String.format("%s-%s Not Found",client.getRequest().getName(),serverRequestModel.getService()));
+                            }
                         } catch (java.lang.Exception e) {
                             client.onException(new TrackException(e));
                         }
@@ -98,7 +105,7 @@ public class CustomWebSocketHandler extends SimpleChannelInboundHandler<Object> 
                     ClientResponseModel clientResponseModel = client.getConfig().getClientResponseModelDeserialize().Deserialize(data);
                     client.es.execute(()->{
                         try {
-                            client.getNet().clientResponseProcess(clientResponseModel);
+                            client.getRequest().clientResponseProcess(clientResponseModel);
                         } catch (java.lang.Exception e) {
                             client.onException(new TrackException(e));
                         }

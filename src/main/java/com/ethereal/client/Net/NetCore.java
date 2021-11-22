@@ -37,14 +37,7 @@ public class NetCore {
     public static Boolean unregister(Net net)
     {
         if(net != null){
-            if(nets.containsKey(net.getName())){
-                //清除请求上的连接
-                net.getClient().disConnect();
-                net.getRequests().clear();
-                net.getServices().clear();
-                NetConfig config = null;
-                nets.remove(net.getName());
-            }
+            nets.remove(net.getName());
         }
         return true;
     }

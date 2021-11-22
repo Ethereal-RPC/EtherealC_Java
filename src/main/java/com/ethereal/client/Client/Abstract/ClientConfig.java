@@ -11,7 +11,7 @@ import com.ethereal.client.Utils.Utils;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-public abstract class ClientConfig {
+public abstract class   ClientConfig {
     private Charset charset = StandardCharsets.UTF_8;
     private ClientRequestModelSerializeDelegate clientRequestModelSerialize;
     private ServerRequestModelDeserializeDelegate serverRequestModelDeserialize;

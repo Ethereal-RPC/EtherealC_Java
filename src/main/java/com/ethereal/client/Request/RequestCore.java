@@ -27,6 +27,7 @@ public class RequestCore {
     }
     public static <T> T register(Net net, Class<?> requestClass, String serviceName, AbstractTypes types) throws TrackException {
         Request request = Request.register((Class<Request>) requestClass);
+        request.initialize();
         if(serviceName!=null)request.setName(serviceName);
         if(types!=null)request.setTypes(types);
         if(!net.getRequests().containsKey(request.getName())){
@@ -34,6 +35,7 @@ public class RequestCore {
             request.getExceptionEvent().register(net::onException);
             request.getLogEvent().register(net::onLog);
             net.getRequests().put(request.getName(), request);
+            request.register();
             return (T)request;
         }
         else throw new TrackException(TrackException.ErrorCode.Core,String.format("%s-%s已注册,无法重复注册！", net.getName(),serviceName));
@@ -42,6 +44,7 @@ public class RequestCore {
     public static boolean unregister(Request request)  {
         request.getNet().getRequests().remove(request.getName());
         request.setNet(null);
+        request.unregister();
         return true;
     }
 }

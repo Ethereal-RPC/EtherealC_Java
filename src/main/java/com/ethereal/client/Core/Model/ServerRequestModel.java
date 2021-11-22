@@ -8,18 +8,18 @@ public class ServerRequestModel {
     @Expose
     private String type = "ER-1.0-ServerRequest";
     @Expose
-    private String methodId;
+    private String mapping;
     @Expose
-    private String[] params;
+    private Object[] params;
     @Expose
     private String service;
 
+    public String getMapping() {
+        return mapping;
+    }
 
-    public ServerRequestModel(String jsonRpc, String methodId, String[] params, String service) {
-        this.type = jsonRpc;
-        this.methodId = methodId;
-        this.params = params;
-        this.service = service;
+    public void setMapping(String mapping) {
+        this.mapping = mapping;
     }
 
     public String getType() {
@@ -30,19 +30,11 @@ public class ServerRequestModel {
         this.type = type;
     }
 
-    public String getMethodId() {
-        return methodId;
-    }
-
-    public void setMethodId(String methodId) {
-        this.methodId = methodId;
-    }
-
-    public String[] getParams() {
+    public Object[] getParams() {
         return params;
     }
 
-    public void setParams(String[] params) {
+    public void setParams(Object[] params) {
         this.params = params;
     }
 
@@ -58,7 +50,7 @@ public class ServerRequestModel {
     public String toString() {
         return "ServerRequestModel{" +
                 "type='" + type + '\'' +
-                ", methodId='" + methodId + '\'' +
+                ", methodId='" + mapping + '\'' +
                 ", params=" + Arrays.toString(params) +
                 ", service='" + service + '\'' +
                 '}';
