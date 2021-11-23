@@ -1,4 +1,4 @@
-package com.ethereal.client.Core.Annotation;
+package com.ethereal.client.Core.Manager.AbstractType;
 
 import java.lang.annotation.*;
 
@@ -6,5 +6,5 @@ import java.lang.annotation.*;
 @Target(value = {ElementType.PARAMETER,ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Param {
-        String name() default "";
+        String type() default "";
 }

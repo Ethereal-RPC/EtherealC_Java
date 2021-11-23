@@ -1,8 +1,8 @@
-package com.ethereal.client.Core.Event;
+package com.ethereal.client.Core.Manager.Event;
 
-import com.ethereal.client.Core.Event.Annotation.Event;
-import com.ethereal.client.Core.Event.Annotation.EventContextParam;
-import com.ethereal.client.Core.Event.Model.EventContext;
+import com.ethereal.client.Core.Manager.Event.Annotation.Event;
+import com.ethereal.client.Core.Manager.Event.Annotation.EventContextParam;
+import com.ethereal.client.Core.Manager.Event.Model.EventContext;
 import com.ethereal.client.Core.Model.TrackException;
 import org.javatuples.Pair;
 
@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 
 public class EventManager {
     private static final Pattern pattern = Pattern.compile("\\w+");
-    private HashMap<Pair<String, String>, Method> methodEvents = new HashMap<>();
+    private final HashMap<Pair<String, String>, Method> methodEvents = new HashMap<>();
     public void invokeEvent(Object instance,String function, HashMap<String, Object> params, EventContext context) throws TrackException, InvocationTargetException, IllegalAccessException {
         //这里性能会有问题，后期优化.
         java.util.regex.Matcher matcher = pattern.matcher(function);
@@ -63,7 +63,7 @@ public class EventManager {
         method.invoke(instance, eventParams);
     }
 
-    public void registerEventMethod(String name, Object instance)
+    public void register(String name, Object instance)
     {
         for (Method method : instance.getClass().getMethods())
         {
@@ -74,7 +74,7 @@ public class EventManager {
             }
         }
     }
-    public void unregisterEventMethod(String name, Object instance)
+    public void unregister(String name, Object instance)
     {
         for (Method method : instance.getClass().getMethods())
         {

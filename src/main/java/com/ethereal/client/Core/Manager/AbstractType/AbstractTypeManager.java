@@ -1,10 +1,12 @@
-package com.ethereal.client.Core.Model;
+package com.ethereal.client.Core.Manager.AbstractType;
+import com.ethereal.client.Core.Model.TrackException;
 import com.ethereal.client.Utils.Utils;
 
+import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 
-public class AbstractTypes {
+public class AbstractTypeManager {
     public interface IConvert {
         Object convert(Object obj);
     }
@@ -27,7 +29,7 @@ public class AbstractTypes {
         this.typesByName = typesByName;
     }
 
-    public AbstractTypes(){
+    public AbstractTypeManager(){
 
     }
     public void add(Type type, String abstractName) throws TrackException {
@@ -38,7 +40,7 @@ public class AbstractTypes {
             rpcType.setType(type);
             rpcType.setDeserialize(obj -> Utils.gson.fromJson(obj,type));
             rpcType.setSerialize(obj -> Utils.gson.toJson(obj,type));
-            this.typesByType.put(type, rpcType);
+            if(!typesByType.containsKey(type))this.typesByType.put(type, rpcType);
             this.typesByName.put(abstractName,rpcType);
         }
     }
@@ -50,8 +52,36 @@ public class AbstractTypes {
             rpcType.setType(type);
             rpcType.setSerialize(serialize);
             rpcType.setDeserialize(deserialize);
-            this.typesByType.put(type, rpcType);
+            if(!typesByType.containsKey(type))this.typesByType.put(type, rpcType);
             this.typesByName.put(abstractName,rpcType);
         }
+    }
+
+    public AbstractType get(String name)
+    {
+        return typesByName.get(name);
+    }
+
+    public AbstractType get(Type type)
+    {
+        return typesByType.get(type);
+    }
+
+    public AbstractType get(Parameter parameterInfo)
+    {
+        Param paramAttribute = parameterInfo.getAnnotation(Param.class);
+        if (paramAttribute != null)
+        {
+            return typesByName.get(paramAttribute.type());
+        }
+        return typesByType.get(parameterInfo.getParameterizedType());
+    }
+    public AbstractType get(String name, Type type)
+    {
+        if (name != null)
+        {
+            return typesByName.get(name);
+        }
+        return typesByType.get(type);
     }
 }

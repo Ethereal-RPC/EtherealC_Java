@@ -1,15 +1,11 @@
 package com.ethereal.client.Service;
 
-import com.ethereal.client.Core.Enums.NetType;
 import com.ethereal.client.Core.Model.TrackException;
-import com.ethereal.client.Core.Model.AbstractTypes;
 import com.ethereal.client.Net.Abstract.Net;
 import com.ethereal.client.Net.NetCore;
 import com.ethereal.client.Request.Abstract.Request;
 import com.ethereal.client.Request.RequestCore;
 import com.ethereal.client.Service.Abstract.Service;
-
-import java.lang.reflect.InvocationTargetException;
 
 public class ServiceCore {
 
@@ -27,14 +23,13 @@ public class ServiceCore {
         return (T)request.getServices().get(serviceName);
     }
     public static <T> T register(Request request,Service service) throws TrackException{
-        return register(request,service,null,null);
+        return register(request,service,null);
     }
-    public static <T> T register(Request request,Service service,String serviceName,AbstractTypes types) throws TrackException {
+    public static <T> T register(Request request,Service service,String serviceName) throws TrackException {
         service.initialize();
         if(serviceName!=null)service.setName(serviceName);
-        if(types!=null)service.setTypes(types);
-        Service.register(service);
         if(!request.getServices().containsKey(service.getName())){
+            Service.register(service);
             service.setRequest(request);
             service.getExceptionEvent().register(request::onException);
             service.getLogEvent().register(request::onLog);
@@ -49,6 +44,7 @@ public class ServiceCore {
         service.unregister();
         service.getRequest().getServices().remove(service.getName());
         service.setRequest(null);
+        service.unInitialize();
         return true;
     }
 }

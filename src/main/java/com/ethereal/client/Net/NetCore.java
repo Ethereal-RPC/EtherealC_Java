@@ -13,7 +13,7 @@ import java.util.HashMap;
 
 public class NetCore {
 
-    private static HashMap<String, Net> nets = new HashMap();
+    private static final HashMap<String, Net> nets = new HashMap();
 
 
     public static Net get(String name)

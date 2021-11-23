@@ -13,7 +13,7 @@ import io.netty.handler.timeout.IdleStateEvent;
  * @created 16/9/18 13:02
  */
 public class CustomHeartbeatHandler extends ChannelInboundHandlerAdapter {
-    private Client client;
+    private final Client client;
     public CustomHeartbeatHandler(Client client){
         this.client = client;
     }

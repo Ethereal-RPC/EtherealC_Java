@@ -1,6 +1,5 @@
 package com.ethereal.client.Request.Event.Model;
 
-import com.ethereal.client.Core.Event.Model.EventContext;
 import com.ethereal.client.Core.Model.Error;
 
 import java.lang.reflect.Method;

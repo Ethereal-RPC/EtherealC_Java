@@ -1,18 +1,18 @@
 package com.ethereal.client.Request.Abstract;
 
-import com.ethereal.client.Core.Annotation.Param;
-import com.ethereal.client.Core.Event.Annotation.AfterEvent;
-import com.ethereal.client.Core.Event.Annotation.BeforeEvent;
-import com.ethereal.client.Core.Event.Model.AfterEventContext;
-import com.ethereal.client.Core.Event.Model.BeforeEventContext;
-import com.ethereal.client.Core.Event.Model.EventContext;
-import com.ethereal.client.Core.Event.Model.ExceptionEventContext;
-import com.ethereal.client.Core.Model.AbstractType;
+import com.ethereal.client.Core.Manager.AbstractType.AbstractType;
+import com.ethereal.client.Core.Manager.AbstractType.Param;
+import com.ethereal.client.Core.Manager.Event.Annotation.AfterEvent;
+import com.ethereal.client.Core.Manager.Event.Annotation.BeforeEvent;
+import com.ethereal.client.Core.Manager.Event.Model.AfterEventContext;
+import com.ethereal.client.Core.Manager.Event.Model.BeforeEventContext;
+import com.ethereal.client.Core.Manager.Event.Model.EventContext;
+import com.ethereal.client.Core.Manager.Event.Model.ExceptionEventContext;
 import com.ethereal.client.Core.Model.ClientRequestModel;
 import com.ethereal.client.Core.Model.ClientResponseModel;
 import com.ethereal.client.Core.Model.TrackException;
 import com.ethereal.client.Request.Annotation.InvokeTypeFlags;
-import com.ethereal.client.Request.Annotation.RequestMethod;
+import com.ethereal.client.Request.Annotation.RequestMapping;
 import com.ethereal.client.Request.Event.Annotation.FailEvent;
 import com.ethereal.client.Request.Event.Annotation.SuccessEvent;
 import com.ethereal.client.Request.Event.Annotation.TimeoutEvent;
@@ -28,12 +28,12 @@ import java.util.HashMap;
 import java.util.Random;
 
 public class RequestInterceptor implements MethodInterceptor {
-    private Random random = new Random();
+    private final Random random = new Random();
 
     @Override
     public Object intercept(Object o, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
         Request instance = (Request) o;
-        RequestMethod annotation = method.getAnnotation(RequestMethod.class);
+        RequestMapping annotation = method.getAnnotation(RequestMapping.class);
         Object localResult = null;
         Object remoteResult = null;
         Object methodResult = null;
@@ -41,39 +41,36 @@ public class RequestInterceptor implements MethodInterceptor {
         Parameter[] parameterInfos = method.getParameters();
         ClientRequestModel request = new ClientRequestModel();
         request.setMapping(annotation.mapping());
-        request.setParams(new String[parameterInfos.length]);
+        request.setParams(new HashMap<>(parameterInfos.length -1 ));
         HashMap<String,Object> params = new HashMap<>(parameterInfos.length);
-        for(int i = 0; i< parameterInfos.length; i++){
-            Param paramAnnotation = method.getAnnotation(Param.class);
-            AbstractType type = null;
-            if(paramAnnotation != null) type = instance.getTypes().getTypesByName().get(paramAnnotation.name());
-            if(type == null)type = instance.getTypes().getTypesByType().get(parameterInfos[i].getParameterizedType());
-            if(type == null)throw new TrackException(TrackException.ErrorCode.Runtime,String.format("RPC中的%s类型参数尚未被注册！",parameterInfos[i].getParameterizedType()));
-            request.getParams()[i] = type.getSerialize().Serialize(args[i]);
-            params.put(parameterInfos[i].getName(),args[i]);
+        int idx = 0;
+        for(Parameter parameterInfo : parameterInfos){
+            AbstractType type = instance.getTypes().get(parameterInfo);
+            request.getParams().put(parameterInfo.getName(),type.getSerialize().Serialize(args[idx]));
+            params.put(parameterInfo.getName(), args[idx++]);
         }
         BeforeEvent beforeEvent = method.getAnnotation(BeforeEvent.class);
         if(beforeEvent != null){
             eventContext = new BeforeEventContext(params,method);
             String iocObjectName = beforeEvent.function().substring(0, beforeEvent.function().indexOf("."));
-            instance.getEventManager().invokeEvent(instance.getIocObject(iocObjectName), beforeEvent.function(), params,eventContext);
+            instance.getIocManager().invokeEvent(instance.getIocManager().get(iocObjectName), beforeEvent.function(), params,eventContext);
         }
         if((annotation.invokeType() & InvokeTypeFlags.Local) == 0) {
             try{
                 localResult = methodProxy.invokeSuper(instance,args);
             }
             catch (Exception e){
-                com.ethereal.client.Core.Event.Annotation.ExceptionEvent exceptionEvent = method.getAnnotation(com.ethereal.client.Core.Event.Annotation.ExceptionEvent.class);
+                com.ethereal.client.Core.Manager.Event.Annotation.ExceptionEvent exceptionEvent = method.getAnnotation(com.ethereal.client.Core.Manager.Event.Annotation.ExceptionEvent.class);
                 if(exceptionEvent != null){
                     eventContext = new ExceptionEventContext(params,method,e);
                     String iocObjectName = exceptionEvent.function().substring(0, exceptionEvent.function().indexOf("."));
-                    instance.getEventManager().invokeEvent(instance.getIocObject(iocObjectName), exceptionEvent.function(),params,eventContext);
+                    instance.getIocManager().invokeEvent(instance.getIocManager().get(iocObjectName), exceptionEvent.function(),params,eventContext);
                     if(exceptionEvent.isThrow())throw e;
                 }
                 else throw e;
             }
         }
-        if((annotation.invokeType() & InvokeTypeFlags.Remote) == 0){
+        if((annotation.invokeType() & InvokeTypeFlags.Remote) != 0){
             Class<?> return_type = method.getReturnType();
             if(return_type.equals(Void.TYPE)){
                 instance.getClient().sendClientRequestModel(request);
@@ -96,11 +93,13 @@ public class RequestInterceptor implements MethodInterceptor {
                                 if(failEvent != null){
                                     eventContext = new FailEventContext(params,method,respond.getError());
                                     String iocObjectName = failEvent.function().substring(0, failEvent.function().indexOf("."));
-                                    instance.getEventManager().invokeEvent(instance.getIocObject(iocObjectName), failEvent.function(), params,eventContext);
+                                    instance.getIocManager().invokeEvent(instance.getIocManager().get(iocObjectName), failEvent.function(), params,eventContext);
                                 }
                                 else throw new TrackException(TrackException.ErrorCode.Runtime,"来自服务端的报错信息：\n" + respond.getError().getMessage());
                             }
-                            AbstractType type = instance.getTypes().getTypesByName().get(method.getAnnotation(Param.class).name());
+                            Param paramAnnotation = method.getAnnotation(Param.class);
+                            AbstractType type = null;
+                            if(paramAnnotation != null) type = instance.getTypes().getTypesByName().get(paramAnnotation.type());
                             if(type == null)type = instance.getTypes().getTypesByType().get(return_type);
                             if(type == null)throw new TrackException(TrackException.ErrorCode.Runtime,String.format("RPC中的%s类型参数尚未被注册！",return_type));
                             remoteResult = type.getDeserialize().Deserialize(respond.getResult());
@@ -108,14 +107,14 @@ public class RequestInterceptor implements MethodInterceptor {
                             if(successEvent != null){
                                 eventContext = new SuccessEventContext(params,method,respond.getResult());
                                 String iocObjectName = successEvent.function().substring(0, successEvent.function().indexOf("."));
-                                instance.getEventManager().invokeEvent(instance.getIocObject(iocObjectName), successEvent.function(),params,eventContext);
+                                instance.getIocManager().invokeEvent(instance.getIocManager().get(iocObjectName), successEvent.function(),params,eventContext);
                             }
                         }
                         TimeoutEvent timeoutEvent =  method.getAnnotation(TimeoutEvent.class);
                         if(timeoutEvent != null){
                             eventContext = new TimeoutEventContext(params,method);
                             String iocObjectName = beforeEvent.function().substring(0, timeoutEvent.function().indexOf("."));
-                            instance.getEventManager().invokeEvent(instance.getIocObject(iocObjectName), timeoutEvent.function(),params,eventContext);
+                            instance.getIocManager().invokeEvent(instance.getIocManager().get(iocObjectName), timeoutEvent.function(),params,eventContext);
                         }
                     }
                 }
@@ -134,7 +133,7 @@ public class RequestInterceptor implements MethodInterceptor {
         if(afterEvent != null){
             eventContext = new AfterEventContext(params,method,methodResult);
             String iocObjectName = afterEvent.function().substring(0,afterEvent.function().indexOf("."));
-            instance.getEventManager().invokeEvent(instance.getIocObject(iocObjectName), afterEvent.function(), params,eventContext);
+            instance.getIocManager().invokeEvent(instance.getIocManager().get(iocObjectName), afterEvent.function(), params,eventContext);
         }
         return methodResult;
     }

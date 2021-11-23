@@ -1,12 +1,13 @@
 package com.ethereal.client.Client.Abstract;
 
-import com.ethereal.client.Client.Event.ConnectFailEvent;
+import com.ethereal.client.Client.EventRegister.ConnectFailEvent;
+import com.ethereal.client.Core.BaseCore.BaseCore;
 import com.ethereal.client.Core.EventRegister.ExceptionEvent;
 import com.ethereal.client.Core.EventRegister.LogEvent;
 import com.ethereal.client.Core.Model.TrackException;
 import com.ethereal.client.Core.Model.TrackLog;
-import com.ethereal.client.Client.Event.ConnectSuccessEvent;
-import com.ethereal.client.Client.Event.DisConnectEvent;
+import com.ethereal.client.Client.EventRegister.ConnectSuccessEvent;
+import com.ethereal.client.Client.EventRegister.DisConnectEvent;
 import com.ethereal.client.Client.Interface.IClient;
 import com.ethereal.client.Request.Abstract.Request;
 
@@ -22,12 +23,10 @@ import com.ethereal.client.Request.Abstract.Request;
  * @UpdateRemark: 类的第一次生成
  * @Version: 1.0
  */
-public abstract class Client implements IClient {
+public abstract class Client extends BaseCore implements IClient {
     protected ClientConfig config;
     protected String prefixes;
     protected Request request;
-    protected ExceptionEvent exceptionEvent = new ExceptionEvent();
-    protected LogEvent logEvent = new LogEvent();
     protected ConnectSuccessEvent connectSuccessEvent = new ConnectSuccessEvent();
     protected ConnectFailEvent connectFailEvent = new ConnectFailEvent();
     protected DisConnectEvent disConnectEvent = new DisConnectEvent();
@@ -59,22 +58,6 @@ public abstract class Client implements IClient {
         this.disConnectEvent = disConnectEvent;
     }
 
-    public ExceptionEvent getExceptionEvent() {
-        return exceptionEvent;
-    }
-
-    public void setExceptionEvent(ExceptionEvent exceptionEvent) {
-        this.exceptionEvent = exceptionEvent;
-    }
-
-    public LogEvent getLogEvent() {
-        return logEvent;
-    }
-
-    public void setLogEvent(LogEvent logEvent) {
-        this.logEvent = logEvent;
-    }
-
     public Request getRequest() {
         return request;
     }
@@ -89,24 +72,6 @@ public abstract class Client implements IClient {
 
     public void setConfig(ClientConfig config) {
         this.config = config;
-    }
-    @Override
-    public void onException(TrackException.ErrorCode code, String message){
-        onException(new TrackException(code, message));
-    }
-    @Override
-    public void onException(TrackException exception)  {
-        exception.setClient(this);
-        exceptionEvent.onEvent(exception);
-    }
-    @Override
-    public void onLog(TrackLog.LogCode code, String message) {
-        onLog(new TrackLog(code, message));
-    }
-    @Override
-    public void onLog(TrackLog log) {
-        log.setClient(this);
-        logEvent.onEvent(log);
     }
 
     public ConnectFailEvent getConnectFailEvent() {

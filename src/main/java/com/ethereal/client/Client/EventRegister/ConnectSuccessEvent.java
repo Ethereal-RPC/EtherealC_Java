@@ -1,7 +1,7 @@
-package com.ethereal.client.Client.Event;
+package com.ethereal.client.Client.EventRegister;
 
 import com.ethereal.client.Client.Abstract.Client;
-import com.ethereal.client.Client.Event.Delegate.OnConnectSuccessDelegate;
+import com.ethereal.client.Client.EventRegister.Delegate.OnConnectSuccessDelegate;
 
 import java.util.Iterator;
 import java.util.Vector;

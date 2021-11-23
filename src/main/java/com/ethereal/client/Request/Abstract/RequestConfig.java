@@ -1,6 +1,5 @@
 package com.ethereal.client.Request.Abstract;
 
-import com.ethereal.client.Core.Model.AbstractTypes;
 import com.ethereal.client.Request.Interface.IRequestConfig;
 
 /**

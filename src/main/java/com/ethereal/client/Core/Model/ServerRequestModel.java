@@ -3,6 +3,7 @@ package com.ethereal.client.Core.Model;
 import com.google.gson.annotations.Expose;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class ServerRequestModel {
     @Expose
@@ -10,7 +11,7 @@ public class ServerRequestModel {
     @Expose
     private String mapping;
     @Expose
-    private Object[] params;
+    private HashMap<String ,String > params;
     @Expose
     private String service;
 
@@ -30,11 +31,11 @@ public class ServerRequestModel {
         this.type = type;
     }
 
-    public Object[] getParams() {
+    public HashMap<String, String> getParams() {
         return params;
     }
 
-    public void setParams(Object[] params) {
+    public void setParams(HashMap<String, String> params) {
         this.params = params;
     }
 
@@ -51,7 +52,6 @@ public class ServerRequestModel {
         return "ServerRequestModel{" +
                 "type='" + type + '\'' +
                 ", methodId='" + mapping + '\'' +
-                ", params=" + Arrays.toString(params) +
                 ", service='" + service + '\'' +
                 '}';
     }

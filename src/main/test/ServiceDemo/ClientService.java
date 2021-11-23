@@ -1,9 +1,9 @@
 package ServiceDemo;
 
 import Model.User;
-import com.ethereal.client.Core.Event.Annotation.AfterEvent;
+import com.ethereal.client.Core.Manager.Event.Annotation.AfterEvent;
 import com.ethereal.client.Core.Model.TrackException;
-import com.ethereal.client.Service.Annotation.ServiceMethod;
+import com.ethereal.client.Service.Annotation.ServiceMapping;
 import com.ethereal.client.Service.WebSocket.WebSocketService;
 
 
@@ -12,21 +12,20 @@ public class ClientService extends WebSocketService {
 
     }
 
-    @ServiceMethod(mapping = "Say")
+    @ServiceMapping(mapping = "Say")
     public void Say(User sender, String message)
     {
         System.out.println(sender.getUsername() + ":" + message);
     }
-    @ServiceMethod(mapping = "test")
+
+    @ServiceMapping(mapping = "test")
     @AfterEvent(function = "instance.after(ddd:d,s:sss)")
     public void test(String sss,Integer d){
         System.out.println("test");
     }
-
-
     @Override
     public void initialize() throws TrackException {
-        name = "Server";
+        name = "Client";
         types.add(Integer.class,"Int");
         types.add(Long.class,"Long");
         types.add(String.class,"String");
@@ -41,6 +40,11 @@ public class ClientService extends WebSocketService {
 
     @Override
     public void unregister() {
+
+    }
+
+    @Override
+    public void unInitialize() {
 
     }
 }

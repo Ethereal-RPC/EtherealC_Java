@@ -5,6 +5,6 @@ import java.lang.annotation.*;
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ServiceMethod {
-        String mapping() default "";
+public @interface ServiceMapping {
+        String mapping();
 }

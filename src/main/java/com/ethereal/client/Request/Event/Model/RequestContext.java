@@ -1,6 +1,6 @@
 package com.ethereal.client.Request.Event.Model;
 
-import com.ethereal.client.Core.Event.Model.EventContext;
+import com.ethereal.client.Core.Manager.Event.Model.EventContext;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;

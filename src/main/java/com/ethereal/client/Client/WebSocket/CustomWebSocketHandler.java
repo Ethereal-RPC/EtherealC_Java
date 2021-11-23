@@ -18,7 +18,7 @@ import io.netty.handler.codec.http.websocketx.*;
 import io.netty.util.CharsetUtil;
 
 public class CustomWebSocketHandler extends SimpleChannelInboundHandler<Object> {
-    private WebSocketClient client;
+    private final WebSocketClient client;
     private ChannelPromise handshakeFuture;
     private WebSocketClientHandshaker handshaker;
 
@@ -67,23 +67,40 @@ public class CustomWebSocketHandler extends SimpleChannelInboundHandler<Object> 
                     client.onLog(TrackLog.LogCode.Runtime,"WebSocket com.ethereal.client.Client connected!");
                     handshakeFuture.setSuccess();
                     client.onConnectSuccess();
-                } catch (WebSocketHandshakeException e) {
-                    handshakeFuture.setFailure(e);
-                    throw new TrackException(TrackException.ErrorCode.Runtime,"WebSocket com.ethereal.client.Client failed to connect");
+                }
+                catch (WebSocketHandshakeException e) {
+                    if (msg instanceof FullHttpResponse) {
+                        FullHttpResponse response = (FullHttpResponse) msg;
+                        String data = response.content().toString(client.getConfig().getCharset());
+                        ClientResponseModel clientResponseModel = client.getConfig().getClientResponseModelDeserialize().Deserialize(data);
+                        if(clientResponseModel.getId() == null){
+                            client.onException(new TrackException(TrackException.ErrorCode.Runtime,data));
+                            return;
+                        }
+                        client.es.execute(()->{
+                            try {
+                                client.getRequest().clientResponseProcess(clientResponseModel);
+                            }
+                            catch (TrackException trackException){
+                                client.onException(trackException);
+                            }
+                            catch (java.lang.Exception exception) {
+                                client.onException(new TrackException(exception));
+                            }
+                        });
+                    }
+                    else {
+                        handshakeFuture.setFailure(e);
+                        throw new TrackException(TrackException.ErrorCode.Runtime,"WebSocket com.ethereal.client.Client failed to connect");
+                    }
                 }
                 return;
-            }
-
-            if (msg instanceof FullHttpResponse) {
-                FullHttpResponse response = (FullHttpResponse) msg;
-                throw new IllegalStateException("Unexpected FullHttpResponse (content=" + response.content().toString(CharsetUtil.UTF_8) + ')');
             }
 
             if (msg instanceof TextWebSocketFrame) {
                 String data = ((TextWebSocketFrame) msg).content().toString(client.getConfig().getCharset());
                 JsonObject json_object = JsonParser.parseString(data).getAsJsonObject();
                 if(json_object.get("Type").toString().equals("ER-1.0-ServerRequest")){
-                    client.onLog(TrackLog.LogCode.Runtime,"[服-请求]:" + data);
                     //服务器模型的反序列化 实体
                     ServerRequestModel serverRequestModel = client.getConfig().getServerRequestModelDeserialize().Deserialize(data);
                     client.es.execute(()->{
@@ -95,7 +112,11 @@ public class CustomWebSocketHandler extends SimpleChannelInboundHandler<Object> 
                             else {
                                 throw new TrackException(TrackException.ErrorCode.Runtime,String.format("%s-%s Not Found",client.getRequest().getName(),serverRequestModel.getService()));
                             }
-                        } catch (java.lang.Exception e) {
+                        }
+                        catch (TrackException e){
+                            client.onException(e);
+                        }
+                        catch (java.lang.Exception e) {
                             client.onException(new TrackException(e));
                         }
                     });
@@ -106,7 +127,11 @@ public class CustomWebSocketHandler extends SimpleChannelInboundHandler<Object> 
                     client.es.execute(()->{
                         try {
                             client.getRequest().clientResponseProcess(clientResponseModel);
-                        } catch (java.lang.Exception e) {
+                        }
+                        catch (TrackException e){
+                            client.onException(e);
+                        }
+                        catch (java.lang.Exception e) {
                             client.onException(new TrackException(e));
                         }
                     });
@@ -116,6 +141,9 @@ public class CustomWebSocketHandler extends SimpleChannelInboundHandler<Object> 
             } else if (msg instanceof CloseWebSocketFrame) {
                 client.disConnect();
             }
+        }
+        catch (TrackException e){
+            client.onException(e);
         }
         catch (java.lang.Exception e){
             client.onException(new TrackException(e));

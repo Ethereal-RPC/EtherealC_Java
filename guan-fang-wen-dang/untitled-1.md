@@ -176,22 +176,21 @@ net.Publish();//启动
 #### Client\[Java\]
 
 ```java
-public interface ServerService
-{
+public interface ServerService {
     @Request
-    public Integer Add(Integer a,Integer b);
+    Integer Add(Integer a, Integer b);
 }
-//注册数据类型
-AbstractTypes types = new AbstractTypes();
+    //注册数据类型
+    AbstractTypes types = new AbstractTypes();
 types.add(Integer.class,"Int");
-types.add(Long,"Long");
-types.add(String,"String");
-types.add(Boolean,"Bool");
-types.add(User.class,"User");
-Net net = NetCore.register("name", Net.NetType.WebSocket); //注册网关
-Client client = ClientCore.Register(net,"127.0.0.1:28015/NetDemo/");//注册客户端
-Request request = RequestCore.register(ServerRequest.class,net, "Server", types);//注册请求
-net.publish();//启动
+        types.add(Long,"Long");
+        types.add(String,"String");
+        types.add(Boolean,"Bool");
+        types.add(User.class,"User");
+        Net net=NetCore.register("name",Net.NetType.WebSocket); //注册网关
+        Client client=ClientCore.Register(net,"127.0.0.1:28015/NetDemo/");//注册客户端
+        Request request=RequestCore.register(ServerRequest.class,net,"Server",types);//注册请求
+        net.publish();//启动
 ```
 
 ### 架构

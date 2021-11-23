@@ -1,6 +1,5 @@
 package com.ethereal.client.Service.Abstract;
 
-import com.ethereal.client.Core.Model.AbstractTypes;
 import com.ethereal.client.Service.Interface.IServiceConfig;
 
 /**

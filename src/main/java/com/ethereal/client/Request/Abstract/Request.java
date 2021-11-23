@@ -1,42 +1,33 @@
 package com.ethereal.client.Request.Abstract;
 
 import com.ethereal.client.Client.Abstract.Client;
-import com.ethereal.client.Core.EventRegister.ExceptionEvent;
-import com.ethereal.client.Core.EventRegister.LogEvent;
-import com.ethereal.client.Core.Event.EventManager;
-import com.ethereal.client.Core.Interface.IBaseIoc;
+import com.ethereal.client.Core.Annotation.BaseParam;
+import com.ethereal.client.Core.BaseCore.MZCore;
+import com.ethereal.client.Core.Manager.AbstractType.Param;
 import com.ethereal.client.Core.Model.*;
 import com.ethereal.client.Net.Abstract.Net;
-import com.ethereal.client.Request.Annotation.RequestMethod;
+import com.ethereal.client.Request.Annotation.RequestMapping;
 import com.ethereal.client.Request.EventRegister.ConnectSuccessEvent;
 import com.ethereal.client.Request.Interface.IRequest;
 import com.ethereal.client.Service.Abstract.Service;
+import com.ethereal.client.Utils.AnnotationUtils;
 import net.sf.cglib.proxy.*;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
+
 @com.ethereal.client.Request.Annotation.Request
-public abstract class Request implements IRequest, IBaseIoc {
-    private final ConcurrentHashMap<Integer,ClientRequestModel> tasks = new ConcurrentHashMap<>();
+public abstract class Request extends MZCore implements IRequest {
+    private final ConcurrentHashMap<Integer, ClientRequestModel> tasks = new ConcurrentHashMap<>();
     protected String name;
     protected Net net;
     protected RequestConfig config;
-    private ExceptionEvent exceptionEvent = new ExceptionEvent();
-    private LogEvent logEvent = new LogEvent();
-    protected AbstractTypes types = new AbstractTypes();
     protected Client client;
     private HashMap<String, Service> services = new HashMap<>();
-    private EventManager eventManager = new EventManager();
-    private HashMap<String,Object> iocContainer = new HashMap<>();
-
-    public AbstractTypes getTypes() {
-        return types;
-    }
-
-    public void setTypes(AbstractTypes types) {
-        this.types = types;
-    }
-
+    //连接成功事件
+    protected ConnectSuccessEvent connectSuccessEvent = new ConnectSuccessEvent();
     public Client getClient() {
         return client;
     }
@@ -45,31 +36,41 @@ public abstract class Request implements IRequest, IBaseIoc {
         this.client = client;
     }
 
-    public EventManager getEventManager() {
-        return eventManager;
-    }
-
-    public void setEventManager(EventManager eventManager) {
-        this.eventManager = eventManager;
-    }
-
-    public static Request register(Class<Request> instance_class){
-        Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(instance_class);
-        RequestInterceptor interceptor = new RequestInterceptor();
-        Callback noOp= NoOp.INSTANCE;
-        enhancer.setCallbacks(new Callback[]{noOp,interceptor});
-        enhancer.setCallbackFilter(method -> {
-            if(method.getAnnotation(RequestMethod.class) != null){
-                return 1;
+    public static void register(Request instance) throws TrackException {
+        for (Method method : instance.getClass().getMethods()){
+            RequestMapping requestAnnotation = method.getAnnotation(RequestMapping.class);
+            if(requestAnnotation !=null){
+                if(method.getReturnType() != void.class){
+                    Param paramAnnotation = method.getAnnotation(Param.class);
+                    if(paramAnnotation != null){
+                        String typeName = paramAnnotation.type();
+                        if(instance.getTypes().get(typeName) == null){
+                            throw new TrackException(TrackException.ErrorCode.Core, String.format("%s 未提供 %s 抽象类型的映射", method.getName(),typeName));
+                        }
+                    }
+                    else if(instance.getTypes().get(method.getReturnType()) == null){
+                        throw new TrackException(TrackException.ErrorCode.Core, String.format("%s 返回值未提供 %s 类型的抽象映射", method.getName(),method.getReturnType()));
+                    }
+                }
+                for (Parameter parameter : method.getParameters()){
+                    if(AnnotationUtils.getAnnotation(parameter, BaseParam.class) != null){
+                        continue;
+                    }
+                    Param paramAnnotation = method.getAnnotation(Param.class);
+                    if(paramAnnotation != null){
+                        String typeName = paramAnnotation.type();
+                        if(instance.getTypes().get(typeName) == null){
+                            throw new TrackException(TrackException.ErrorCode.Core, String.format("%s-%s-%s抽象类型未找到",instance.getName() ,method.getName(),paramAnnotation.type()));
+                        }
+                    }
+                    else if(instance.getTypes().get(parameter.getParameterizedType()) == null){
+                        throw new TrackException(TrackException.ErrorCode.Core, String.format("%s-%s-%s类型映射抽象类型",instance.getName() ,method.getName(),parameter.getParameterizedType()));
+                    }
+                }
             }
-            else return 0;
-        });
-        return (Request)enhancer.create();
+        }
     }
 
-    //连接成功事件
-    protected ConnectSuccessEvent connectSuccessEvent = new ConnectSuccessEvent();
 
     public ConnectSuccessEvent getConnectSuccessEvent() {
         return connectSuccessEvent;
@@ -90,9 +91,11 @@ public abstract class Request implements IRequest, IBaseIoc {
     public RequestConfig getConfig() {
         return config;
     }
+
     public void setConfig(RequestConfig config) {
         this.config = config;
     }
+
     public ConcurrentHashMap<Integer, ClientRequestModel> getTasks() {
         return tasks;
     }
@@ -113,78 +116,16 @@ public abstract class Request implements IRequest, IBaseIoc {
         this.net = net;
     }
 
-    public ExceptionEvent getExceptionEvent() {
-        return exceptionEvent;
-    }
-
-    public void setExceptionEvent(ExceptionEvent exceptionEvent) {
-        this.exceptionEvent = exceptionEvent;
-    }
-
-    public LogEvent getLogEvent() {
-        return logEvent;
-    }
-
-    public void setLogEvent(LogEvent logEvent) {
-        this.logEvent = logEvent;
-    }
-
-
-    public void clientResponseProcess(ClientResponseModel response) throws TrackException {
-        Integer id = Integer.parseInt(response.getId());
-        ClientRequestModel requestModel = getTasks().get(id);
-        if(requestModel != null){
-            requestModel.setResult(response);
-        }
-        else throw new TrackException(TrackException.ErrorCode.Runtime,String.format("%s-%s-%s RequestId未找到",name,response.getService(),id));
-
-    }
-    @Override
-
-    public void onException(TrackException.ErrorCode code, String message) {
-        onException(new TrackException(code,message));
-    }
-    @Override
-    public void onException(TrackException exception)  {
-        exception.setRequest(this);
-        exceptionEvent.onEvent(exception);
-    }
-    @Override
-
-    public void onLog(TrackLog.LogCode code, String message){
-        onLog(new TrackLog(code,message));
-    }
-    @Override
-    public void onLog(TrackLog log){
-        log.setRequest(this);
-        logEvent.onEvent(log);
-    }
-
     public void onConnectSuccess(){
         connectSuccessEvent.onEvent(this);
     }
-
-
-    @Override
-    public void registerIoc(String name, Object instance) throws TrackException {
-        if(iocContainer.containsKey(name)){
-            throw new TrackException(TrackException.ErrorCode.Runtime, String.format("%s服务已经注册%sIOC实例",this.name,name));
-        }
-        iocContainer.put(name,instance);
-        eventManager.registerEventMethod(name,instance);
+    public void clientResponseProcess(ClientResponseModel response) throws TrackException {
+        Integer id = Integer.parseInt(response.getId());
+        ClientRequestModel requestModel = getTasks().get(id);
+        if (requestModel != null) {
+            requestModel.setResult(response);
+        } else
+            throw new TrackException(TrackException.ErrorCode.Runtime, String.format("%s-%s-%s RequestId未找到", net.getName(), name, id));
     }
 
-    @Override
-    public void unregisterIoc(String name) {
-        if(iocContainer.containsKey(name)){
-            Object instance = iocContainer.get(name);
-            iocContainer.remove(name);
-            eventManager.unregisterEventMethod(name,instance);
-        }
-    }
-
-    @Override
-    public Object getIocObject(String name) {
-        return iocContainer.get(name);
-    }
 }

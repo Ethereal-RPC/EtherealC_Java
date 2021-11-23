@@ -1,4 +1,4 @@
-package com.ethereal.client.Core.Event.Annotation;
+package com.ethereal.client.Core.Manager.Event.Annotation;
 
 import java.lang.annotation.*;
 

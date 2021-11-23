@@ -11,8 +11,6 @@ public class ClientResponseModel {
     private Error error = null;
     @Expose
     private String id = null;
-    @Expose
-    private String service = null;
 
     public String getType() {
         return type;
@@ -46,14 +44,6 @@ public class ClientResponseModel {
         this.id = id;
     }
 
-    public String getService() {
-        return service;
-    }
-
-    public void setService(String service) {
-        this.service = service;
-    }
-
     @Override
     public String toString() {
         return "ClientResponseModel{" +
@@ -61,7 +51,6 @@ public class ClientResponseModel {
                 ", result='" + result + '\'' +
                 ", error=" + error +
                 ", id='" + id + '\'' +
-                ", service='" + service + '\'' +
                 '}';
     }
 }

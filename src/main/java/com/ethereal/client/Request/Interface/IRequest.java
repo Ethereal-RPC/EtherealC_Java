@@ -4,8 +4,9 @@ import com.ethereal.client.Core.Interface.IExceptionEvent;
 import com.ethereal.client.Core.Interface.ILogEvent;
 import com.ethereal.client.Core.Model.TrackException;
 
-public interface IRequest extends IExceptionEvent, ILogEvent {
+public interface IRequest{
     void initialize() throws TrackException;
     void register();
     void unregister();
+    void unInitialize();
 }

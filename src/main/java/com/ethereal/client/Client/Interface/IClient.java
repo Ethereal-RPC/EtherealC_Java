@@ -16,7 +16,7 @@ import com.ethereal.client.Core.Model.ClientRequestModel;
  * @UpdateRemark: 类的第一次生成
  * @Version: 1.0
  */
-public interface IClient extends IExceptionEvent, ILogEvent {
+public interface IClient {
     void connect();
     void disConnect();
     boolean isConnect();

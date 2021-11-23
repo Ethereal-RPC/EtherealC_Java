@@ -1,4 +1,4 @@
-package com.ethereal.client.Core.Event.Annotation;
+package com.ethereal.client.Core.Manager.Event.Annotation;
 
 import java.lang.annotation.*;
 
@@ -6,7 +6,7 @@ import java.lang.annotation.*;
 @Inherited
 @Target(value = {ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface AfterEvent {
+public @interface BeforeEvent {
     String function();
 }
 

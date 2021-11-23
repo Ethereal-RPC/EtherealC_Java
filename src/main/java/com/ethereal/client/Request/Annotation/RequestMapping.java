@@ -5,8 +5,8 @@ import java.lang.annotation.*;
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RequestMethod {
-        String mapping() default "";
+public @interface RequestMapping{
+        String mapping();
         int timeout() default -1;
         int invokeType() default InvokeTypeFlags.Remote | InvokeTypeFlags.ReturnRemote;
 }

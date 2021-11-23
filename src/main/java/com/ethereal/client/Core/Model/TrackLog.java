@@ -1,49 +1,17 @@
 package com.ethereal.client.Core.Model;
 
-import com.ethereal.client.Client.Abstract.Client;
-import com.ethereal.client.Net.Abstract.Net;
-import com.ethereal.client.Request.Abstract.Request;
-import com.ethereal.client.Service.Abstract.Service;
-
 public class TrackLog {
     public enum LogCode { Core, Runtime }
     private String message;
     private LogCode code;
-    private Client client;
-    private Service service;
-    private Request request;
-    private Net net;
+    private Object sender;
 
-    public Client getClient() {
-        return client;
+    public Object getSender() {
+        return sender;
     }
 
-    public void setClient(Client client) {
-        this.client = client;
-    }
-
-    public Service getService() {
-        return service;
-    }
-
-    public void setService(Service service) {
-        this.service = service;
-    }
-
-    public Request getRequest() {
-        return request;
-    }
-
-    public void setRequest(Request request) {
-        this.request = request;
-    }
-
-    public Net getNet() {
-        return net;
-    }
-
-    public void setNet(Net net) {
-        this.net = net;
+    public void setSender(Object sender) {
+        this.sender = sender;
     }
 
     public String getMessage() {

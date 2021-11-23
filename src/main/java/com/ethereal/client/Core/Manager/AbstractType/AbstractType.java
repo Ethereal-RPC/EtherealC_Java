@@ -1,4 +1,4 @@
-package com.ethereal.client.Core.Model;
+package com.ethereal.client.Core.Manager.AbstractType;
 
 import java.lang.reflect.Type;
 

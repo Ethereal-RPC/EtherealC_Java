@@ -1,6 +1,6 @@
 package ServiceDemo;
 
-import com.ethereal.client.Core.Event.Annotation.Event;
+import com.ethereal.client.Core.Manager.Event.Annotation.Event;
 
 import java.util.logging.ConsoleHandler;
 
