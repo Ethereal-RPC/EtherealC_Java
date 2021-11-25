@@ -21,20 +21,34 @@ public class ClientCore {
     }
 
     public static Client register(Request request, Client client) throws TrackException {
-        request.setClient(client);
-        client.setRequest(request);
-        client.getLogEvent().register(request::onLog);//日志系统
-        client.getExceptionEvent().register(request::onException);//异常系统
-        client.getConnectSuccessEvent().register(value -> {
-            request.onConnectSuccess();
-        });
-        return client;
+        return register(request,client,true);
+    }
+    public static Client register(Request request, Client client,Boolean startConnect) throws TrackException {
+        if(!client.isRegister()){
+            client.setRegister(true);
+            request.setClient(client);
+            client.setRequest(request);
+            client.getLogEvent().register(request::onLog);//日志系统
+            client.getExceptionEvent().register(request::onException);//异常系统
+            client.getConnectSuccessEvent().register(value -> {
+                request.onConnectSuccess();
+            });
+            if(startConnect){
+                client.connect();
+            }
+            return client;
+        }
+        else throw new TrackException(TrackException.ErrorCode.Runtime, String.format("%s已经Register", client.getPrefixes()));
     }
 
-    public static boolean unregister(Client client)  {
-        client.getRequest().setClient(null);
-        client.setRequest(null);
-        client.disConnect();
-        return true;
+    public static boolean unregister(Client client) throws TrackException {
+        if(client.isRegister()){
+            client.getRequest().setClient(null);
+            client.setRequest(null);
+            client.disConnect();
+            client.setRegister(false);
+            return true;
+        }
+        else throw new TrackException(TrackException.ErrorCode.Runtime, String.format("%s已经UnRegister", client.getPrefixes()));
     }
 }

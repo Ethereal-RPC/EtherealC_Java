@@ -22,24 +22,28 @@ public class NetCore {
     }
 
     public static Net register(Net net) throws TrackException {
-        if (!nets.containsKey(net.getName()))
+        if (!net.isRegister())
         {
+            net.setRegister(true);
             nets.put(net.getName(), net);
             return net;
         }
         else throw new TrackException(TrackException.ErrorCode.Core, String.format("Net:%s 已注册", net.getName()));
     }
 
-    public static Boolean unregister(String name)  {
+    public static Boolean unregister(String name) throws TrackException {
         Net net = get(name);
         return unregister(net);
     }
-    public static Boolean unregister(Net net)
-    {
-        if(net != null){
-            nets.remove(net.getName());
+    public static Boolean unregister(Net net) throws TrackException {
+        if(net.isRegister()){
+            if(net != null){
+                nets.remove(net.getName());
+            }
+            net.setRegister(false);
+            return true;
         }
-        return true;
+        else throw new TrackException(TrackException.ErrorCode.Core, String.format("Net:%s 已注册", net.getName()));
     }
 
 }

@@ -28,7 +28,8 @@ public class ServiceCore {
     public static <T> T register(Request request,Service service,String serviceName) throws TrackException {
         service.initialize();
         if(serviceName!=null)service.setName(serviceName);
-        if(!request.getServices().containsKey(service.getName())){
+        if(!request.isRegister()){
+            request.setRegister(true);
             Service.register(service);
             service.setRequest(request);
             service.getExceptionEvent().register(request::onException);
@@ -40,11 +41,15 @@ public class ServiceCore {
         else throw new TrackException(TrackException.ErrorCode.Core,String.format("%s-%s已注册,无法重复注册！",request.getName(),service.getName()));
     }
 
-    public static boolean unregister(Service service) {
-        service.unregister();
-        service.getRequest().getServices().remove(service.getName());
-        service.setRequest(null);
-        service.unInitialize();
-        return true;
+    public static boolean unregister(Service service) throws TrackException {
+        if(service.isRegister()){
+            service.unregister();
+            service.getRequest().getServices().remove(service.getName());
+            service.setRequest(null);
+            service.unInitialize();
+            service.setRegister(false);
+            return true;
+        }
+        else throw new TrackException(TrackException.ErrorCode.Core,String.format("%s-%s已注册,无法重复注册！",service.getName()));
     }
 }

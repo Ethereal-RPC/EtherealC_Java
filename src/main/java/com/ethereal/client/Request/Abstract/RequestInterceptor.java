@@ -70,6 +70,12 @@ public class RequestInterceptor implements MethodInterceptor {
                 else throw e;
             }
         }
+        AfterEvent afterEvent = method.getAnnotation(AfterEvent.class);
+        if(afterEvent != null){
+            eventContext = new AfterEventContext(params,method,localResult);
+            String iocObjectName = afterEvent.function().substring(0,afterEvent.function().indexOf("."));
+            instance.getIocManager().invokeEvent(instance.getIocManager().get(iocObjectName), afterEvent.function(), params,eventContext);
+        }
         if((annotation.invokeType() & InvokeTypeFlags.Remote) != 0){
             Class<?> return_type = method.getReturnType();
             if(return_type.equals(Void.TYPE)){
@@ -128,12 +134,6 @@ public class RequestInterceptor implements MethodInterceptor {
         }
         else if((annotation.invokeType() & InvokeTypeFlags.ReturnLocal) != 0){
             methodResult = localResult;
-        }
-        AfterEvent afterEvent = method.getAnnotation(AfterEvent.class);
-        if(afterEvent != null){
-            eventContext = new AfterEventContext(params,method,methodResult);
-            String iocObjectName = afterEvent.function().substring(0,afterEvent.function().indexOf("."));
-            instance.getIocManager().invokeEvent(instance.getIocManager().get(iocObjectName), afterEvent.function(), params,eventContext);
         }
         return methodResult;
     }
