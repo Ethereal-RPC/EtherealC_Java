@@ -1,5 +1,6 @@
 package com.ethereal.client.Client.Abstract;
 
+import com.ethereal.client.Client.Interface.IClientConfig;
 import com.ethereal.client.Core.Model.ClientRequestModel;
 import com.ethereal.client.Core.Model.ClientResponseModel;
 import com.ethereal.client.Core.Model.ServerRequestModel;
@@ -11,7 +12,7 @@ import com.ethereal.client.Utils.Utils;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-public abstract class   ClientConfig {
+public abstract class ClientConfig implements IClientConfig {
     private Charset charset = StandardCharsets.UTF_8;
     private ClientRequestModelSerializeDelegate clientRequestModelSerialize;
     private ServerRequestModelDeserializeDelegate serverRequestModelDeserialize;

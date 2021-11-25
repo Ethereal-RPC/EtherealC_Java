@@ -1,6 +1,7 @@
 package com.ethereal.client.Net.Abstract;
 
 import com.ethereal.client.Client.Abstract.ClientConfig;
+import com.ethereal.client.Net.Interface.INetConfig;
 import org.javatuples.Pair;
 
 import java.util.List;
@@ -17,6 +18,6 @@ import java.util.List;
  * @UpdateRemark: 更新说明
  * @Version: 1.0
  */
-public abstract class NetConfig {
+public abstract class NetConfig implements INetConfig {
 
 }
